@@ -1,6 +1,8 @@
-import { BaseModel, column } from '@adonisjs/lucid/orm'
+import Image from '#models/image'
+import Purchase from '#models/purchase'
+import { BaseModel, column, hasMany, manyToMany } from '@adonisjs/lucid/orm'
+import type { HasMany, ManyToMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
-
 export default class Product extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
@@ -16,6 +18,14 @@ export default class Product extends BaseModel {
 
   @column()
   declare category: string
+
+  @hasMany(() => Purchase)
+  declare purchases: HasMany<typeof Purchase>
+
+  @manyToMany(() => Image, {
+    pivotTable: 'image_product',
+  })
+  declare images: ManyToMany<typeof Image>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

@@ -1,25 +1,29 @@
-import Event from '#models/event'
-import Ticket from '#models/ticket'
+import Booking from '#models/booking'
+import Purchase from '#models/purchase'
+import Status from '#models/status'
 import User from '#models/user'
 import { BaseModel, belongsTo, column, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import { DateTime } from 'luxon'
 
-export default class Booking extends BaseModel {
+export default class Ticket extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
   @column()
-  declare datetime: DateTime
+  declare qrcode_url: string
 
-  @hasMany(() => Ticket)
-  declare tickets: HasMany<typeof Ticket>
+  @belongsTo(() => Status)
+  declare status: BelongsTo<typeof Status>
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
-  @belongsTo(() => Event)
-  declare event: BelongsTo<typeof Event>
+  @belongsTo(() => Booking)
+  declare booking: BelongsTo<typeof Booking>
+
+  @hasMany(() => Purchase)
+  declare purchases: HasMany<typeof Purchase>
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime

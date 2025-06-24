@@ -16,3 +16,4 @@ router.get('/', async () => {
 })
 
 router.resource('products', '#controllers/products_controller')
+router.resource('events', '#controllers/events_controller')

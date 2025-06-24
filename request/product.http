@@ -1,0 +1,7 @@
+### Variables
+@baseUrl = http://localhost:3333/products
+@contentType = application/json
+
+### Test de la route racine
+GET {{baseUrl}}/
+Accept: {{contentType}}

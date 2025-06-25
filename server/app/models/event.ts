@@ -22,6 +22,9 @@ export default class Event extends BaseModel {
   @column()
   declare artist: string
 
+  @column()
+  declare max_ticket: number
+
   @hasMany(() => Booking)
   declare bookings: HasMany<typeof Booking>
 

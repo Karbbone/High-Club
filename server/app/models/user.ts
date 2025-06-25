@@ -1,5 +1,6 @@
 import Booking from '#models/booking'
 import Image from '#models/image'
+import Message from '#models/message'
 import Ticket from '#models/ticket'
 import { DbAccessTokensProvider } from '@adonisjs/auth/access_tokens'
 import { withAuthFinder } from '@adonisjs/auth/mixins/lucid'
@@ -50,6 +51,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
 
   @hasMany(() => Booking)
   declare bookings: HasMany<typeof Booking>
+
+  @hasMany(() => Message)
+  declare messages: HasMany<typeof Message>
 
   @belongsTo(() => Image, {
     foreignKey: 'image_id',

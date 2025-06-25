@@ -28,3 +28,6 @@ router.put('/tickets/:id/waiting', '#controllers/tickets_controller.waiting')
 router.put('/tickets/:id/used', '#controllers/tickets_controller.used')
 router.put('/tickets/:id/canceled', '#controllers/tickets_controller.canceled')
 router.put('/users/:id/profile-picture', '#controllers/users_controller.updateProfilePicture')
+
+router.post('/messages', '#controllers/messages_controller.store')
+router.post('/messages/user', '#controllers/messages_controller.getUserMessages')

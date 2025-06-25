@@ -1,0 +1,71 @@
+### Variables
+@baseUrl = http://localhost:3333
+@contentType = application/json
+
+### Créer un nouveau message
+POST {{baseUrl}}/messages
+Content-Type: {{contentType}}
+
+{
+  "subject": "Test de message",
+  "body": "Ceci est un message de test pour vérifier le bon fonctionnement de l'API",
+  "userId": 1
+}
+
+###
+
+### Créer un autre message
+POST {{baseUrl}}/messages
+Content-Type: {{contentType}}
+
+{
+  "subject": "Bienvenue sur High Club",
+  "body": "Nous sommes ravis de vous accueillir sur notre plateforme ! N'hésitez pas à explorer toutes nos fonctionnalités.",
+  "userId": 1
+}
+
+###
+
+### Récupérer tous les messages d'un utilisateur
+POST {{baseUrl}}/messages/user
+Content-Type: {{contentType}}
+
+{
+  "userId": 1
+}
+
+###
+
+### Test avec un utilisateur inexistant (devrait retourner 404)
+POST {{baseUrl}}/messages/user
+Content-Type: {{contentType}}
+
+{
+  "userId": 999
+}
+
+###
+
+### Test de création avec des données invalides (devrait retourner 400)
+POST {{baseUrl}}/messages
+Content-Type: {{contentType}}
+
+{
+  "subject": "",
+  "body": "",
+  "userId": "invalid"
+}
+
+###
+
+### Test de création avec utilisateur inexistant (devrait retourner 404)
+POST {{baseUrl}}/messages
+Content-Type: {{contentType}}
+
+{
+  "subject": "Message pour utilisateur inexistant",
+  "body": "Ce message ne devrait pas être créé car l'utilisateur n'existe pas",
+  "userId": 999
+}
+
+###

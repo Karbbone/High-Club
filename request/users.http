@@ -1,0 +1,33 @@
+### Variables
+@baseUrl = http://localhost:3333/users
+@contentType = application/json
+
+### Test de récupération d'un user spécifique (ID: 1)
+GET {{baseUrl}}/1
+Accept: {{contentType}}
+
+### Test avec un ID inexistant
+GET {{baseUrl}}/999
+Accept: {{contentType}}
+
+### Test de récupération d'un user par email (exemple: admin@mydi.com)
+GET {{baseUrl}}/email?email=admin@mydi.com
+Accept: {{contentType}}
+
+### Test avec un email inexistant
+GET {{baseUrl}}/email?email=notfound@mydi.com
+Accept: {{contentType}}
+
+### Test de mise à jour d'un user (ID: 1)
+PUT {{baseUrl}}/1
+Content-Type: {{contentType}}
+
+{
+  "is_verified": false,
+  "email": "updated@mydi.com",
+  "password": "NewPassword123!",
+  "username": "updateduser",
+  "firstname": "Updated",
+  "lastname": "User",
+  "fidelity_point": 20
+}

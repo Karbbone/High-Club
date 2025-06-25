@@ -42,13 +42,18 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @column()
   declare fidelity_point: number
 
+  @column()
+  declare image_id: number
+
   @hasMany(() => Ticket)
   declare tickets: HasMany<typeof Ticket>
 
   @hasMany(() => Booking)
   declare bookings: HasMany<typeof Booking>
 
-  @belongsTo(() => Image)
+  @belongsTo(() => Image, {
+    foreignKey: 'image_id',
+  })
   declare image: BelongsTo<typeof Image>
 
   @column.dateTime({ autoCreate: true })

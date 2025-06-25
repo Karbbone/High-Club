@@ -13,13 +13,28 @@ export default class Ticket extends BaseModel {
   @column()
   declare qrcode_url: string
 
-  @belongsTo(() => Status)
+  @column()
+  declare booking_id: number
+
+  @column()
+  declare user_id: number
+
+  @column()
+  declare status_id: number
+
+  @belongsTo(() => Status, {
+    foreignKey: 'status_id',
+  })
   declare status: BelongsTo<typeof Status>
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
   declare user: BelongsTo<typeof User>
 
-  @belongsTo(() => Booking)
+  @belongsTo(() => Booking, {
+    foreignKey: 'booking_id',
+  })
   declare booking: BelongsTo<typeof Booking>
 
   @hasMany(() => Purchase)

@@ -12,13 +12,25 @@ export default class Booking extends BaseModel {
   @column()
   declare datetime: DateTime
 
-  @hasMany(() => Ticket)
+  @column()
+  declare user_id: number
+
+  @column()
+  declare event_id: number
+
+  @hasMany(() => Ticket, {
+    foreignKey: 'booking_id',
+  })
   declare tickets: HasMany<typeof Ticket>
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'user_id',
+  })
   declare user: BelongsTo<typeof User>
 
-  @belongsTo(() => Event)
+  @belongsTo(() => Event, {
+    foreignKey: 'event_id',
+  })
   declare event: BelongsTo<typeof Event>
 
   @column.dateTime({ autoCreate: true })

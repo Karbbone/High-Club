@@ -21,6 +21,7 @@ router.get('/users/email', '#controllers/users_controller.showByEmail')
 router.resource('products', '#controllers/products_controller')
 router.resource('events', '#controllers/events_controller')
 router.resource('tickets', '#controllers/tickets_controller')
+router.resource('bookings', '#controllers/bookings_controller')
 router.resource('users', '#controllers/users_controller')
 
 router.put('/tickets/:id/waiting', '#controllers/tickets_controller.waiting')

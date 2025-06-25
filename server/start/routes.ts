@@ -19,6 +19,7 @@ router.get('/', async () => {
 router.resource('products', '#controllers/products_controller')
 router.resource('events', '#controllers/events_controller')
 router.resource('tickets', '#controllers/tickets_controller')
+router.resource('bookings', '#controllers/bookings_controller')
 
 router.put('/tickets/:id/waiting', '#controllers/tickets_controller.waiting')
 router.put('/tickets/:id/used', '#controllers/tickets_controller.used')

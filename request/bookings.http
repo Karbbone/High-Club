@@ -1,0 +1,39 @@
+### Variables
+@baseUrl = http://localhost:3333/bookings
+@contentType = application/json
+
+### Test de la route racine
+GET {{baseUrl}}/
+Accept: {{contentType}}
+
+### Test de récupération d'un booking spécifique (ID: 1)
+GET {{baseUrl}}/1
+Accept: {{contentType}}
+
+### Test avec un ID inexistant
+GET {{baseUrl}}/999
+Accept: {{contentType}}
+
+### Test de création d'un nouveau booking
+POST {{baseUrl}}
+Content-Type: {{contentType}}
+
+{
+  "datetime": "2025-09-15T21:00:00.000Z",
+  "user_id": 1,
+  "event_id": 1
+}
+
+### Test de mise à jour d'un booking (ID: 1)
+PUT {{baseUrl}}/1
+Content-Type: {{contentType}}
+
+{
+  "datetime": "2025-07-24T19:00:00.000Z",
+  "user_id": 1,
+  "event_id": 1
+}
+
+### Test de suppression d'un booking (ID: 3)
+DELETE {{baseUrl}}/3
+Accept: {{contentType}} 

@@ -1,15 +1,18 @@
 {
   "expo": {
-    "name": "client-app",
-    "slug": "client-app",
+    "name": "highclub",
+    "slug": "highclub",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "clientapp",
+    "scheme": "highclub",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "jsEngine": "hermes",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "jsEngine": "jsc"
+
     },
     "android": {
       "adaptiveIcon": {

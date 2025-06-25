@@ -6,5 +6,6 @@ export default {
       apiPort: process.env.API_PORT || '3333',
       apiProtocol: process.env.API_PROTOCOL || 'http',
     },
+    scheme: 'high-club',
   },
 }; 

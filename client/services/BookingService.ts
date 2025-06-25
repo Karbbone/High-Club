@@ -1,7 +1,7 @@
 // hooks/useBookings.ts
-import { useQuery } from '@tanstack/react-query';
 import { fetcher } from '@/services/fetcher';
 import type { Booking } from '@/types/IBooking';
+import { useQuery } from '@tanstack/react-query';
 
 export function useBookings() {
   return useQuery({

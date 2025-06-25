@@ -3,8 +3,8 @@ import { Image } from "@/types/IImage";
 
 export interface Event {
   id: number;
-  start_datetime: string;
-  end_datetime: string;
+  startDatetime: string;
+  endDatetime: string;
   name: string;
   description: string;
   artist: string;

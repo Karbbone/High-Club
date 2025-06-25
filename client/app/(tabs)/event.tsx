@@ -1,12 +1,18 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { DateFormatterService } from '@/services/DateFormatterService';
 import { useEvents } from '@/services/EventService';
 import { Image } from 'expo-image';
-import { Platform, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
+import { useRouter } from 'expo-router';
+import dateFormat from "dateformat";
+
+
 
 export default function EventScreen() {
   const { data: events, isLoading, error } = useEvents();
+  const router = useRouter();
+
+  
   
   if (isLoading) return <Text>Loading...</Text>;
   //to-do return error page
@@ -15,7 +21,7 @@ export default function EventScreen() {
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={styles.title}>Événements à venir</ThemedText>
-      <ScrollView>
+      <ScrollView style={{ flex: 1, marginBottom: 80 }} >
         {events && events.data.length === 0 && (
           <Text style={{ textAlign: 'center', marginTop: 20 }}>Aucun événement à venir</Text>
         )}
@@ -25,10 +31,20 @@ export default function EventScreen() {
               source={{ uri: event.images[0].link || 'https://via.placeholder.com/300' }}
               style={styles.imagePlaceholder}
             />
-            <Text style={styles.sectionTitle}>{event.artist}</Text>
-            <Text style={styles.sectionProps}>{event.description}</Text>
-            <Text style={styles.sectionProps}>{DateFormatterService.format(event.startDatetime, 'DD-MM-YYYY / HH:mm')}</Text>
-            <Text style={styles.sectionProps}>{DateFormatterService.format(event.endDatetime, 'DD-MM-YYYY / HH:mm')}</Text>
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
+              <View style={{ maxWidth: '50%' }}>
+                <Text style={styles.sectionTitle}>{event.name}</Text>
+                <Text style={styles.sectionProps}>{event.description}</Text>
+                <Text style={styles.sectionProps}>{dateFormat(event.startDatetime, 'ddd dd mmm, hh:MM')}</Text>
+                <Text style={styles.sectionProps}>{dateFormat(event.endDatetime, 'ddd dd mmm, hh:MM')}</Text>
+              </View>
+              <TouchableOpacity
+                style={styles.reserveBtn}
+                onPress={() => router.navigate({ pathname: `booking/${event.id}`, params: { event: JSON.stringify(event) } })}
+              >
+                <Text style={styles.reserveBtnText}>Réservation</Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ))}
       </ScrollView>
@@ -50,6 +66,7 @@ const styles = StyleSheet.create({
       android: 80,
       default: 20,
     }),
+    paddingBottom: 20,
   },
   title: {
     marginBottom: 8,
@@ -70,6 +87,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 18,
     marginBottom: 4,
+
   },
   sectionProps: {
     color: '#888',
@@ -90,5 +108,17 @@ const styles = StyleSheet.create({
   fabIcon: {
     fontSize: 28,
     color: '#fff',
+  },
+    reserveBtn: {
+    backgroundColor: '#222',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    paddingHorizontal: 16,
+  },
+  reserveBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
   },
 });

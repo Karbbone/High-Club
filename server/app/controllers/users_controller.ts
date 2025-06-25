@@ -9,7 +9,7 @@ import path from 'node:path'
 export default class UsersController {
   async show({ params, response }: HttpContext) {
     try {
-      const user = await User.findOrFail(params.id)
+    const user = await User.query().where('id', params.id).preload('image').firstOrFail()
       return response.ok({
         success: true,
         data: user,

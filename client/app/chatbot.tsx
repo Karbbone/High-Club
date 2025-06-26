@@ -2,11 +2,12 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { api } from "@/services/api";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Pressable,
   ScrollView,
   StyleSheet,
   Text,
@@ -17,23 +18,20 @@ import {
 
 export default function ChatbotScreen() {
   const router = useRouter();
-  const [step, setStep] = useState(1); // Démarrer à l'étape 1
+  const [step, setStep] = useState(1);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
 
-  const handleSendMessage = async () => {
-    // Afficher un log pour le débogage
-    console.log("handleSendMessage appelé, étape actuelle:", step);
-
+  // Utiliser useCallback pour éviter des rendus inutiles
+  const handleSendMessage = useCallback(async () => {
     // Toujours effacer les erreurs précédentes au début
     setError("");
 
     // Si on est à l'étape 1, passer à l'étape 2
     if (step === 1) {
-      console.log("Passage à l'étape 2");
       setStep(2);
       setError("");
       return;
@@ -43,7 +41,11 @@ export default function ChatbotScreen() {
     if (step === 2) {
       try {
         setIsSending(true);
-        console.log("Envoi du message:", { subject, body: message, userId: 1 });
+        console.log("Données à envoyer:", {
+          subject,
+          body: message,
+          userId: 1,
+        });
         await api.post("/messages", {
           subject,
           body: message,
@@ -58,13 +60,12 @@ export default function ChatbotScreen() {
           router.replace({ pathname: "/", params: { messageSuccess: "true" } });
         }, 2000);
       } catch (err) {
-        setError("Erreur: " + (err.message || "Une erreur est survenue"));
-        console.error(err);
+        setError("Erreur: " + (err.message ?? "Une erreur est survenue"));
       } finally {
         setIsSending(false);
       }
     }
-  };
+  }, [step, subject, message, router, isSending]);
 
   const handleBack = () => {
     if (step === 1) {
@@ -158,21 +159,23 @@ export default function ChatbotScreen() {
             onChangeText={step === 1 ? setSubject : setMessage}
             multiline={step === 2}
           />
-          <TouchableOpacity
-            style={[styles.sendButton, isSending && styles.sendButtonDisabled]}
-            onPress={() => {
-              console.log("Bouton pressé");
-              handleSendMessage();
-            }}
+          <Pressable
+            style={({ pressed }) => [
+              styles.sendButton,
+              isSending && styles.sendButtonDisabled,
+              pressed && styles.sendButtonPressed,
+            ]}
+            onPressIn={() => handleSendMessage()}
+            onPress={handleSendMessage}
             disabled={isSending}
-            activeOpacity={0.7} // Feedback visuel amélioré
+            android_ripple={{ color: "#fff", borderless: false }}
           >
             {isSending ? (
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <Text style={styles.sendButtonText}>{getButtonText()}</Text>
             )}
-          </TouchableOpacity>
+          </Pressable>
         </View>
       </ThemedView>
     </KeyboardAvoidingView>
@@ -184,6 +187,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f5f5f5",
     paddingTop: Platform.OS === "ios" ? 60 : 40,
+  },
+  buttonContainer: {
+    overflow: "hidden",
+    borderRadius: 24,
+    marginLeft: 8,
   },
   header: {
     flexDirection: "row",
@@ -274,6 +282,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#222",
     borderRadius: 24,
     width: 80,
+    height: 50, // Hauteur fixe pour assurer une zone tactile suffisante
     justifyContent: "center",
     alignItems: "center",
     elevation: 3, // Ombre sur Android
@@ -284,9 +293,18 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
+    paddingHorizontal: 10, // Assure une zone de toucher minimale
+    marginLeft: 8,
+    // Assurer que le bouton est clickable
+    zIndex: 1000,
+    position: "relative",
   },
   sendButtonDisabled: {
     backgroundColor: "#888",
+  },
+  sendButtonPressed: {
+    backgroundColor: "#444",
+    transform: [{ scale: 0.95 }],
   },
   sendButtonText: {
     color: "#fff",

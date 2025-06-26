@@ -71,7 +71,7 @@ export default function Account() {
 
         <View style={styles.accountRow}>
           <View>
-            <Text style={styles.accountTitle}>Nom d&pos;utilisateur</Text>
+            <Text style={styles.accountTitle}>Nom d&apos;utilisateur</Text>
             <Text style={styles.accountSub}>{user.username}</Text>
           </View>
         </View>

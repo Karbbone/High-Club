@@ -41,7 +41,12 @@
           "cameraPermission": "Allow $(PRODUCT_NAME) to access your camera",
           "cameraPermissionPhoto": "Allow $(PRODUCT_NAME) to access your photos"
         }
-      ]
+      ],
+      "expo-video",
+      {
+        "supportsBackgroundPlayback": true,
+        "supportsPictureInPicture": true
+      }
     ],
     "experiments": {
       "typedRoutes": true

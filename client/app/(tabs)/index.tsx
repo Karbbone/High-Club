@@ -9,11 +9,13 @@ import {
   StyleSheet,
   Platform,
   View,
+  Text,
 } from 'react-native'
 import { ThemedText } from '@/components/ThemedText'
 import { ThemedView } from '@/components/ThemedView'
-import { Video } from 'expo-av'
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { api } from '@/services/api';
+import { useState } from 'react'
 
 
 async function fetchLastPosts() {
@@ -29,12 +31,44 @@ async function fetchLastPosts() {
   }[]
 }
 
+function VideoCard({ item, currentVideo, setCurrentVideo }) {
+  // Appelle le hook ici, pas dans une boucle !
+  const player = useVideoPlayer(item.video_url, player => {
+    player.loop = true;
+  });
+
+  return (
+    <>
+      <Pressable onPress={() => setCurrentVideo(item.video_url)}>
+        <Image source={{ uri: item.media_url }} style={styles.image} />
+        <View style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          justifyContent: 'center', alignItems: 'center',
+          backgroundColor: 'rgba(0,0,0,0.15)'
+        }}>
+        </View>
+      </Pressable>
+      {currentVideo === item.video_url && (
+        <VideoView
+          player={player}
+          style={styles.image}
+        />
+      )}
+    </>
+  );
+}
+
+
 export default function HomeScreen() {
   const { data, isLoading, error } = useQuery({
     queryKey: ['igLast5'],
     queryFn: fetchLastPosts,
-    staleTime: 10 * 60 * 1000,
+    staleTime: Infinity,
+    retry: false,
   })
+
+  const [currentVideo, setCurrentVideo] = useState<string | null>(null);
 
   if (isLoading) {
     return (
@@ -54,37 +88,32 @@ export default function HomeScreen() {
 
   return (
     <FlatList
-    data={data}
-    keyExtractor={(it) => it.id}
-    contentContainerStyle={styles.list}
-    renderItem={({ item }) => (
-      <View style={styles.card}>
-        <ThemedView style={styles.fab}>
-          <ThemedText style={styles.fabIcon}>🎬</ThemedText>
-        </ThemedView>
-        {item.is_video ? (
-          <Video
-            source={{ uri: item.video_url }}
-            style={styles.image}
-            useNativeControls
-            isLooping
-          />
-        ) : (
-          <Image source={{ uri: item.media_url }} style={styles.image} />
-        )}
-        <ThemedText style={styles.caption} numberOfLines={5}>
-          {item.caption || 'Événement'}
-        </ThemedText>
-        <Pressable
-          style={styles.igBtn}
-          onPress={() => Linking.openURL(item.permalink)}
-        >
-          <ThemedText style={styles.igBtnText}>Voir sur Instagram</ThemedText>
-        </Pressable>
-      </View>
-    )}
-    showsVerticalScrollIndicator={false}
-  />
+      data={data}
+      keyExtractor={(it) => it.id}
+      contentContainerStyle={styles.list}
+      renderItem={({ item }) => (
+        <View style={styles.card}>
+          <ThemedView style={styles.fab}>
+            <ThemedText style={styles.fabIcon}>🎬</ThemedText>
+          </ThemedView>
+          {item.is_video ? (
+            <VideoCard item={item} currentVideo={currentVideo} setCurrentVideo={setCurrentVideo} />
+          ) : (
+            <Image source={{ uri: item.media_url }} style={styles.image} />
+          )}
+          <ThemedText style={styles.caption} numberOfLines={5}>
+            {item.caption || 'Événement'}
+          </ThemedText>
+          <Pressable
+            style={styles.igBtn}
+            onPress={() => Linking.openURL(item.permalink)}
+          >
+            <ThemedText style={styles.igBtnText}>Voir sur Instagram</ThemedText>
+          </Pressable>
+        </View>
+      )}
+      showsVerticalScrollIndicator={false}
+    />
   )
 }
 

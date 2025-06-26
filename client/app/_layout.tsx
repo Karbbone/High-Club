@@ -1,10 +1,6 @@
 import { useColorScheme } from "@/hooks/useColorScheme";
 import NetInfo from "@react-native-community/netinfo";
-import {
-  DarkTheme,
-  DefaultTheme,
-  ThemeProvider,
-} from "@react-navigation/native";
+import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import {
   focusManager,
   onlineManager,
@@ -15,7 +11,13 @@ import { useFonts } from "expo-font";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
-import { AppState, Platform, TouchableOpacity, Text, StyleSheet } from "react-native";
+import {
+  AppState,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+} from "react-native";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 
@@ -53,7 +55,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={DarkTheme}>
         <Stack>
           <Stack.Screen
             name="(tabs)"
@@ -65,7 +67,7 @@ export default function RootLayout() {
           <Stack.Screen name="scanner" options={{ title: "Scanner" }} />
           <Stack.Screen name="+not-found" />
         </Stack>
-        <StatusBar style="auto" />
+        <StatusBar style="light" />
         {!isChatbot && (
           <TouchableOpacity
             style={styles.fab}
@@ -88,13 +90,20 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: "#222",
+    backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "center",
     elevation: 40,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
   },
   fabIcon: {
     fontSize: 28,
-    color: "#fff",
+    color: "#192734",
   },
 });

@@ -1,34 +1,50 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useEvents } from '@/services/EventService';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useEvents } from "@/services/EventService";
 import dateFormat from "dateformat";
-import { Image } from 'expo-image';
-import { useRouter } from 'expo-router';
-import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-
-
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function EventScreen() {
   const { data: events, isLoading, error } = useEvents();
   const router = useRouter();
 
-  if (isLoading) return <Text>Loading...</Text>;
+  if (isLoading)
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={{ color: "#fff" }}>Loading...</ThemedText>
+      </ThemedView>
+    );
   //to-do return error page
   if (error)
-    return <Text style={{ paddingTop: 20 }}>Error: {error.message}</Text>;
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={{ paddingTop: 20, color: "#fff" }}>
+          Error: {error.message}
+        </ThemedText>
+      </ThemedView>
+    );
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText style={styles.title}>Événements à venir</ThemedText>
-      <ScrollView style={{ flex: 1, marginBottom: 80 }} >
+      <ScrollView style={{ flex: 1, marginBottom: 80 }}>
         {events && events.data.length === 0 && (
-          <Text style={{ textAlign: "center", marginTop: 20 }}>
+          <Text style={{ textAlign: "center", marginTop: 20, color: "#fff" }}>
             Aucun événement à venir
           </Text>
         )}
         {events.data.length > 0 &&
-          events.data.map((event, idx) => (
-            <View key={idx} style={styles.card}>
+          events.data.map((event) => (
+            <View key={event.id} style={styles.card}>
               <Image
                 source={{
                   uri:
@@ -48,9 +64,6 @@ export default function EventScreen() {
                   <Text style={styles.sectionProps}>{event.description}</Text>
                   <Text style={styles.sectionProps}>
                     {dateFormat(event.startDatetime, "ddd dd mmm, hh:MM")}
-                  </Text>
-                  <Text style={styles.sectionProps}>
-                    {dateFormat(event.endDatetime, "ddd dd mmm, hh:MM")}
                   </Text>
                 </View>
                 <TouchableOpacity
@@ -77,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#192734",
     paddingTop: Platform.select({
       ios: 80,
       android: 80,
@@ -88,8 +101,8 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 8,
     fontSize: 22,
-    fontWeight: 'bold',
-    color: '#222',
+    fontWeight: "bold",
+    color: "#fff",
   },
   card: {
     marginBottom: 24,
@@ -105,36 +118,21 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 18,
     marginBottom: 4,
-  },
-  sectionProps: {
-    color: "#888",
-    fontSize: 15,
-  },
-  fab: {
-    position: "absolute",
-    right: 24,
-    bottom: Platform.OS === "ios" ? 100 : 24, // ← plus haut sur iOS
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: "#222",
-    justifyContent: "center",
-    alignItems: "center",
-    elevation: 4,
-  },
-  fabIcon: {
-    fontSize: 28,
     color: "#fff",
   },
+  sectionProps: {
+    color: "#ccc",
+    fontSize: 15,
+  },
   reserveBtn: {
-    backgroundColor: '#222',
+    backgroundColor: "#fff",
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",
     paddingHorizontal: 16,
   },
   reserveBtnText: {
-    color: "#fff",
+    color: "#192734",
     fontWeight: "bold",
     fontSize: 18,
   },

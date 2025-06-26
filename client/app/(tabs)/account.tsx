@@ -1,18 +1,18 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useUsers } from "@/services/UserService";
+import dateFormat from "dateformat";
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
-  Platform,
 } from "react-native";
-import { Image } from "expo-image";
-import dateFormat from "dateformat";
-import { useRouter } from "expo-router";
-import { useUsers } from "@/services/UserService";
 
 export default function Account() {
   const { data, isLoading, error } = useUsers();
@@ -20,10 +20,21 @@ export default function Account() {
 
   const router = useRouter();
 
-  if (isLoading) return <Text>Loading...</Text>;
+  if (isLoading)
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={{ color: "#fff" }}>Loading...</ThemedText>
+      </ThemedView>
+    );
   //to-do return error page
   if (error)
-    return <Text style={{ paddingTop: 20 }}>Error: {error.message}</Text>;
+    return (
+      <ThemedView style={styles.container}>
+        <ThemedText style={{ paddingTop: 20, color: "#fff" }}>
+          Error: {error.message}
+        </ThemedText>
+      </ThemedView>
+    );
 
   return (
     <ThemedView style={styles.container}>
@@ -124,7 +135,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#192734",
     paddingTop: Platform.select({
       ios: 80,
       android: 80,
@@ -134,7 +145,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 25,
     fontWeight: "bold",
-    color: "#222",
+    color: "#fff",
   },
   imagePlaceholder: {
     width: "30%",
@@ -148,21 +159,21 @@ const styles = StyleSheet.create({
     fontSize: 18,
     marginTop: 18,
     marginBottom: 5,
-    color: "#222",
+    color: "#fff",
   },
   subtitle: {
     fontWeight: "bold",
     fontSize: 17,
     marginTop: 10,
     marginBottom: 10,
-    color: "#222",
+    color: "#fff",
   },
   largeText: {
     fontWeight: "600",
     fontSize: 18,
     marginTop: 5,
     marginBottom: 14,
-    color: "#222",
+    color: "#fff",
   },
   accountRow: {
     flexDirection: "row",
@@ -173,14 +184,14 @@ const styles = StyleSheet.create({
   accountTitle: {
     fontSize: 16,
     fontWeight: "500",
-    color: "#222",
+    color: "#fff",
   },
   accountSub: {
-    color: "#888",
+    color: "#ccc",
     fontSize: 14,
   },
   updateUserBtn: {
-    backgroundColor: "#222",
+    backgroundColor: "#fff",
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",
@@ -188,9 +199,8 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   updateUserBtnText: {
-    color: "#fff",
+    color: "#192734",
     fontWeight: "bold",
-
     fontSize: 16,
   },
   fab: {
@@ -213,6 +223,6 @@ const styles = StyleSheet.create({
   },
   fabIcon: {
     fontSize: 24,
-    color: "#222",
+    color: "#192734",
   },
 });

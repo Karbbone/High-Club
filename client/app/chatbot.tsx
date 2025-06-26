@@ -185,7 +185,7 @@ export default function ChatbotScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f5f5f5",
+    backgroundColor: "#192734",
     paddingTop: Platform.OS === "ios" ? 20 : 40,
   },
   buttonContainer: {
@@ -199,7 +199,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingBottom: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "#e0e0e0",
+    borderBottomColor: "#2a3947",
   },
   backButton: {
     marginRight: 16,
@@ -210,11 +210,12 @@ const styles = StyleSheet.create({
   backButtonText: {
     fontSize: 24,
     fontWeight: "bold",
-    color: "#222",
+    color: "#fff",
   },
   title: {
     fontWeight: "bold",
     fontSize: 20,
+    color: "#fff",
   },
   chatContainer: {
     flex: 1,
@@ -262,26 +263,27 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: "row",
     padding: 16,
-    backgroundColor: "#fff",
+    backgroundColor: "#192734",
     borderTopWidth: 1,
-    borderTopColor: "#e0e0e0",
+    borderTopColor: "#2a3947",
     paddingBottom: Platform.OS === "android" ? 30 : 16, // Plus d'espace en bas sur Android
     marginBottom: Platform.OS === "android" ? 10 : 0, // Marge supplémentaire sur Android
   },
   input: {
     flex: 1,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fff",
     borderRadius: 24,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 16,
     marginRight: 8,
     maxHeight: 100,
+    color: "#192734",
   },
   sendButton: {
-    backgroundColor: "#222",
+    backgroundColor: "#fff",
     borderRadius: 24,
-    minWidth: 100, 
+    minWidth: 100,
     height: 50, // Hauteur fixe pour assurer une zone tactile suffisante
     justifyContent: "center",
     alignItems: "center",
@@ -300,14 +302,14 @@ const styles = StyleSheet.create({
     position: "relative",
   },
   sendButtonDisabled: {
-    backgroundColor: "#888",
+    backgroundColor: "#ccc",
   },
   sendButtonPressed: {
-    backgroundColor: "#444",
+    backgroundColor: "#f0f0f0",
     transform: [{ scale: 0.95 }],
   },
   sendButtonText: {
-    color: "#fff",
+    color: "#192734",
     fontWeight: "bold",
     fontSize: 16,
   },

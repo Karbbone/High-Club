@@ -1,56 +1,86 @@
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { useEvents } from '@/services/EventService';
-import { Image } from 'expo-image';
-import { Platform, ScrollView, StyleSheet, Text, View, TouchableOpacity } from 'react-native';
-import { useRouter } from 'expo-router';
+import { ThemedText } from "@/components/ThemedText";
+import { ThemedView } from "@/components/ThemedView";
+import { useEvents } from "@/services/EventService";
 import dateFormat from "dateformat";
-
-
+import { Image } from "expo-image";
+import { useRouter } from "expo-router";
+import {
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 
 export default function EventScreen() {
   const { data: events, isLoading, error } = useEvents();
   const router = useRouter();
 
-  
-  
   if (isLoading) return <Text>Loading...</Text>;
   //to-do return error page
-  if (error) return <Text style={{ paddingTop: 20 }}>Error: {error.message}</Text>;
+  if (error)
+    return <Text style={{ paddingTop: 20 }}>Error: {error.message}</Text>;
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>Événements à venir</ThemedText>
-      <ScrollView style={{ flex: 1, marginBottom: 80 }} >
+      <ThemedText type="title" style={styles.title}>
+        Événements à venir
+      </ThemedText>
+      <ScrollView style={{ flex: 1, marginBottom: 80 }}>
         {events && events.data.length === 0 && (
-          <Text style={{ textAlign: 'center', marginTop: 20 }}>Aucun événement à venir</Text>
+          <Text style={{ textAlign: "center", marginTop: 20 }}>
+            Aucun événement à venir
+          </Text>
         )}
-        {events.data.length > 0 && events.data.map((event, idx) => (
-          <View key={idx} style={styles.card}>
-            <Image
-              source={{ uri: event.images[0].link || 'https://via.placeholder.com/300' }}
-              style={styles.imagePlaceholder}
-            />
-            <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-              <View style={{ maxWidth: '50%' }}>
-                <Text style={styles.sectionTitle}>{event.name}</Text>
-                <Text style={styles.sectionProps}>{event.description}</Text>
-                <Text style={styles.sectionProps}>{dateFormat(event.startDatetime, 'ddd dd mmm, hh:MM')}</Text>
-                <Text style={styles.sectionProps}>{dateFormat(event.endDatetime, 'ddd dd mmm, hh:MM')}</Text>
-              </View>
-              <TouchableOpacity
-                style={styles.reserveBtn}
-                onPress={() => router.navigate({ pathname: `booking/${event.id}`, params: { event: JSON.stringify(event) } })}
+        {events.data.length > 0 &&
+          events.data.map((event, idx) => (
+            <View key={idx} style={styles.card}>
+              <Image
+                source={{
+                  uri:
+                    event.images[0].link || "https://via.placeholder.com/300",
+                }}
+                style={styles.imagePlaceholder}
+              />
+              <View
+                style={{
+                  flexDirection: "row",
+                  justifyContent: "space-between",
+                  alignItems: "flex-end",
+                }}
               >
-                <Text style={styles.reserveBtnText}>Réservation</Text>
-              </TouchableOpacity>
+                <View style={{ maxWidth: "50%" }}>
+                  <Text style={styles.sectionTitle}>{event.name}</Text>
+                  <Text style={styles.sectionProps}>{event.description}</Text>
+                  <Text style={styles.sectionProps}>
+                    {dateFormat(event.startDatetime, "ddd dd mmm, hh:MM")}
+                  </Text>
+                  <Text style={styles.sectionProps}>
+                    {dateFormat(event.endDatetime, "ddd dd mmm, hh:MM")}
+                  </Text>
+                </View>
+                <TouchableOpacity
+                  style={styles.reserveBtn}
+                  onPress={() =>
+                    router.navigate({
+                      pathname: `booking/${event.id}`,
+                      params: { event: JSON.stringify(event) },
+                    })
+                  }
+                >
+                  <Text style={styles.reserveBtnText}>Réservation</Text>
+                </TouchableOpacity>
+              </View>
             </View>
-          </View>
-        ))}
+          ))}
       </ScrollView>
-      <View style={styles.fab}>
-        <Text style={styles.fabIcon}>😊</Text>
-      </View>
+      <TouchableOpacity
+        style={styles.fab}
+        onPress={() => router.navigate("chatbot")}
+      >
+        <Text style={styles.fabIcon}>💬</Text>
+      </TouchableOpacity>
     </ThemedView>
   );
 }
@@ -60,7 +90,7 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     gap: 16,
-    backgroundColor: '#fff',
+    backgroundColor: "#fff",
     paddingTop: Platform.select({
       ios: 80,
       android: 80,
@@ -70,55 +100,54 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 8,
-    fontWeight: 'bold',
-    color: '#222',
+    fontWeight: "bold",
+    color: "#222",
   },
   card: {
     marginBottom: 24,
   },
   imagePlaceholder: {
-    width: '100%',
+    width: "100%",
     aspectRatio: 1.8,
-    backgroundColor: '#B0B3B8',
+    backgroundColor: "#B0B3B8",
     borderRadius: 16,
     marginBottom: 12,
   },
   sectionTitle: {
-    fontWeight: '600',
+    fontWeight: "600",
     fontSize: 18,
     marginBottom: 4,
-
   },
   sectionProps: {
-    color: '#888',
+    color: "#888",
     fontSize: 15,
   },
   fab: {
-    position: 'absolute',
+    position: "absolute",
     right: 24,
     bottom: 24,
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#222",
+    justifyContent: "center",
+    alignItems: "center",
     elevation: 4,
   },
   fabIcon: {
     fontSize: 28,
-    color: '#fff',
+    color: "#fff",
   },
-    reserveBtn: {
-    backgroundColor: '#222',
+  reserveBtn: {
+    backgroundColor: "#222",
     borderRadius: 10,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
     paddingHorizontal: 16,
   },
   reserveBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 18,
   },
 });

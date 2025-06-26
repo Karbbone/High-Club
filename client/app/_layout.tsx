@@ -1,36 +1,44 @@
-import { useColorScheme } from '@/hooks/useColorScheme';
-import NetInfo from '@react-native-community/netinfo';
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { focusManager, onlineManager, QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import { AppState, Platform } from 'react-native';
-import 'react-native-reanimated';
-
+import { useColorScheme } from "@/hooks/useColorScheme";
+import NetInfo from "@react-native-community/netinfo";
+import {
+  DarkTheme,
+  DefaultTheme,
+  ThemeProvider,
+} from "@react-navigation/native";
+import {
+  focusManager,
+  onlineManager,
+  QueryClient,
+  QueryClientProvider,
+} from "@tanstack/react-query";
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
+import { AppState, Platform } from "react-native";
+import "react-native-reanimated";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const queryClient = new QueryClient();
   const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
+    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
 
-  onlineManager.setEventListener(setOnline => {
-    return NetInfo.addEventListener(state => {
+  onlineManager.setEventListener((setOnline) => {
+    return NetInfo.addEventListener((state) => {
       setOnline(!!state.isConnected);
     });
   });
 
   function onAppStateChange(status) {
-    if (Platform.OS !== 'web') {
-      focusManager.setFocused(status === 'active');
+    if (Platform.OS !== "web") {
+      focusManager.setFocused(status === "active");
     }
   }
 
   useEffect(() => {
-    const subscription = AppState.addEventListener('change', onAppStateChange);
+    const subscription = AppState.addEventListener("change", onAppStateChange);
     return () => subscription.remove();
   }, []);
 
@@ -41,15 +49,16 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
         <Stack>
-          <Stack.Screen 
-            name="(tabs)" 
+          <Stack.Screen
+            name="(tabs)"
             options={{
-               headerShown: false,
-               title: 'Home',
-            }} />
-          <Stack.Screen name="scanner" options={{ title: 'Scanner' }} /> 
+              headerShown: false,
+              title: "Home",
+            }}
+          />
+          <Stack.Screen name="scanner" options={{ title: "Scanner" }} />
           <Stack.Screen name="+not-found" />
         </Stack>
         <StatusBar style="auto" />

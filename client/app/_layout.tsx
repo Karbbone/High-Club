@@ -17,6 +17,7 @@ import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import { AppState, Platform, TouchableOpacity, Text, StyleSheet } from "react-native";
 import "react-native-reanimated";
+import Toast from "react-native-toast-message";
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -74,6 +75,7 @@ export default function RootLayout() {
           </TouchableOpacity>
         )}
       </ThemeProvider>
+      <Toast position="top" />
     </QueryClientProvider>
   );
 }

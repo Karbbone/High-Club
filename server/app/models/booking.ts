@@ -13,7 +13,7 @@ export default class Booking extends BaseModel {
   declare datetime: DateTime
 
   @column()
-  declare user_id: number
+  declare userId: number
 
   @column()
   declare event_id: number

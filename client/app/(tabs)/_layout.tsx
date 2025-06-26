@@ -58,13 +58,22 @@ export default function TabLayout() {
           }}
         />
       )}
+      <Tabs.Screen
+        name="commandes"
+        options={{
+          title: "Commandes",
+          tabBarIcon: ({ color }) => (
+            <IconSymbol size={28} name="ticket.fill" color={color} />
+          ),
+        }}
+      />
       {(Platform.OS === "ios" || Platform.OS === "android") && (
         <Tabs.Screen
           name="account"
           options={{
             title: "Profil",
             tabBarIcon: ({ color }) => (
-              <IconSymbol size={28} name="paperplane.fill" color={color} />
+              <IconSymbol size={28} name="person.fill" color={color} />
             ),
           }}
         />

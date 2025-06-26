@@ -16,6 +16,7 @@ router.get('/', async () => {
 })
 
 router.get('/users/email', '#controllers/users_controller.showByEmail')
+router.get('/user/:id/bookings', '#controllers/users_controller.showTicketByID')
 
 // Routes CRUD standard
 router.resource('products', '#controllers/products_controller')
@@ -24,6 +25,7 @@ router.resource('tickets', '#controllers/tickets_controller')
 router.resource('bookings', '#controllers/bookings_controller')
 router.resource('users', '#controllers/users_controller')
 
+router.get('/users/:id/tickets', '#controllers/users_controller.show')
 router.put('/tickets/:id/waiting', '#controllers/tickets_controller.waiting')
 router.put('/tickets/:id/used', '#controllers/tickets_controller.used')
 router.put('/tickets/:id/canceled', '#controllers/tickets_controller.canceled')

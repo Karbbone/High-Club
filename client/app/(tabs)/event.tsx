@@ -1,17 +1,12 @@
-import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { useEvents } from "@/services/EventService";
+import { ThemedText } from '@/components/ThemedText';
+import { ThemedView } from '@/components/ThemedView';
+import { useEvents } from '@/services/EventService';
 import dateFormat from "dateformat";
-import { Image } from "expo-image";
-import { useRouter } from "expo-router";
-import {
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
+import { Image } from 'expo-image';
+import { useRouter } from 'expo-router';
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+
 
 export default function EventScreen() {
   const { data: events, isLoading, error } = useEvents();
@@ -24,10 +19,8 @@ export default function EventScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>
-        Événements à venir
-      </ThemedText>
-      <ScrollView style={{ flex: 1, marginBottom: 80 }}>
+      <ThemedText style={styles.title}>Événements à venir</ThemedText>
+      <ScrollView style={{ flex: 1, marginBottom: 80 }} >
         {events && events.data.length === 0 && (
           <Text style={{ textAlign: "center", marginTop: 20 }}>
             Aucun événement à venir
@@ -94,8 +87,9 @@ const styles = StyleSheet.create({
   },
   title: {
     marginBottom: 8,
-    fontWeight: "bold",
-    color: "#222",
+    fontSize: 22,
+    fontWeight: 'bold',
+    color: '#222',
   },
   card: {
     marginBottom: 24,
@@ -133,7 +127,7 @@ const styles = StyleSheet.create({
     color: "#fff",
   },
   reserveBtn: {
-    backgroundColor: "#222",
+    backgroundColor: '#222',
     borderRadius: 10,
     paddingVertical: 14,
     alignItems: "center",

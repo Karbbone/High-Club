@@ -75,12 +75,6 @@ export default function EventScreen() {
             </View>
           ))}
       </ScrollView>
-      <TouchableOpacity
-        style={styles.fab}
-        onPress={() => router.navigate("chatbot")}
-      >
-        <Text style={styles.fabIcon}>💬</Text>
-      </TouchableOpacity>
     </ThemedView>
   );
 }

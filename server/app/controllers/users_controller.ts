@@ -1,5 +1,7 @@
 import User from '#models/user'
 import Image from '#models/image'
+import Booking from '#models/booking'
+import Ticket from '#models/ticket'
 import { cuid } from '@adonisjs/core/helpers'
 import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
@@ -126,5 +128,64 @@ export default class UsersController {
       success: true,
       imageUrl: image.link,
     })
+  }
+
+  async showTicketsByBooking({ params, response }: HttpContext) {
+    try {
+      const { id: userId, bookingId } = params
+
+      // Récupérer le booking avec tous ses tickets
+      const booking = await Booking.query()
+        .where('id', bookingId)
+        .preload('tickets', (ticketQuery) => {
+          ticketQuery
+            .preload('user', (userQuery) => {
+              userQuery.select('id', 'username', 'email', 'firstname', 'lastname')
+            })
+            .preload('status')
+            .preload('purchases', (purchaseQuery) => {
+              purchaseQuery.preload('product')
+            })
+        })
+        .preload('event', (eventQuery) => {
+          eventQuery.preload('images')
+        })
+        .firstOrFail()
+
+      // Vérifier si l'utilisateur connecté est le propriétaire du booking
+      const isBookingOwner = booking.user_id === Number(userId)
+
+      let ticketsToShow: InstanceType<typeof Ticket>[] = []
+
+      if (isBookingOwner) {
+        // Si c'est le propriétaire, afficher tous les tickets du booking
+        ticketsToShow = booking.tickets
+      } else {
+        // Sinon, afficher seulement le ticket de l'utilisateur connecté
+        const userTicket = booking.tickets.find((ticket) => ticket.user_id === Number(userId))
+        if (userTicket) {
+          ticketsToShow = [userTicket]
+        }
+      }
+
+      return response.ok({
+        success: true,
+        data: {
+          booking: {
+            id: booking.id,
+            datetime: booking.datetime,
+            event: booking.event,
+          },
+          tickets: ticketsToShow,
+          isBookingOwner,
+        },
+      })
+    } catch (error) {
+      return response.badRequest({
+        success: false,
+        message: 'Erreur lors de la récupération des tickets',
+        error: error.message,
+      })
+    }
   }
 }

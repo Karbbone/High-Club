@@ -49,7 +49,9 @@ export default class User extends compose(BaseModel, AuthFinder) {
   @hasMany(() => Ticket)
   declare tickets: HasMany<typeof Ticket>
 
-  @hasMany(() => Booking)
+  @hasMany(() => Booking, {
+    foreignKey: 'user_id',
+  })
   declare bookings: HasMany<typeof Booking>
 
   @hasMany(() => Message)

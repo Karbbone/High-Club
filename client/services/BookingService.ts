@@ -1,7 +1,8 @@
 // hooks/useBookings.ts
 import { fetcher } from '@/services/fetcher';
+import { api } from '@/services/api';
 import type { Booking } from '@/types/IBooking';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation } from '@tanstack/react-query';
 
 export function useBookings() {
   return useQuery({
@@ -16,5 +17,32 @@ export function useHello() {
     queryFn: () => fetcher<{
       hello: string;
     }>('/'),
+  });
+}
+
+// Interface pour la création d'une réservation (format backend)
+interface CreateBookingData {
+  datetime: string;
+  user_id: number;
+  event_id: number;
+  purchases: {
+    product_id: number;
+    quantity: number;
+  }[];
+  guests: {
+    email: string;
+    purchases: {
+      product_id: number;
+      quantity: number;
+    }[];
+  }[];
+}
+
+export function useCreateBooking() {
+  return useMutation({
+    mutationFn: async (bookingData: CreateBookingData) => {
+      const response = await api.post<{ success: boolean; data: Booking }>('/bookings', bookingData);
+      return response.data;
+    },
   });
 }

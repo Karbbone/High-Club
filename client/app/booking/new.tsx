@@ -27,7 +27,9 @@ export default function BookingScreen() {
   const { data: products, isLoading: productsLoading } = useProducts();
   const createBookingMutation = useCreateBooking();
 
-  const [users, setUsers] = useState([{ email: "", purchases: {} }]);
+  const [users, setUsers] = useState([
+    { email: "", purchases: {} }
+  ]);
   const [total, setTotal] = useState(0);
 
   useEffect(() => {
@@ -68,8 +70,17 @@ export default function BookingScreen() {
     setUsers(updated);
   };
 
-  // Fonction pour supprimer une place
+  // Fonction pour supprimer une place (mais pas l'utilisateur connecté)
   const removeUser = (idx) => {
+    // Empêcher la suppression de l'utilisateur connecté (idx === 0)
+    if (idx === 0) {
+      Toast.show({
+        type: "error",
+        text1: "Impossible",
+        text2: "Vous ne pouvez pas supprimer votre propre place.",
+      });
+      return;
+    }
     setUsers(users.filter((_, i) => i !== idx));
   };
 
@@ -147,15 +158,22 @@ export default function BookingScreen() {
                 >
                   <Text style={styles.removeBtnText}>✕</Text>
                 </TouchableOpacity>
-                <Text style={styles.sectionTitle}>Utilisateur {idx + 1}</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Email"
-                  value={user.email}
-                  onChangeText={(text) => updateUser(idx, "email", text)}
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                />
+                <Text style={styles.sectionTitle}>
+                  {idx === 0 ? "Moi (utilisateur connecté)" : `Invité ${idx}`}
+                </Text>
+                
+                {/* Input email seulement pour les invités (pas pour l'utilisateur connecté) */}
+                {idx > 0 && (
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Email de l'invité"
+                    value={user.email}
+                    onChangeText={(text) => updateUser(idx, "email", text)}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                  />
+                )}
+                
                 <Text style={styles.sectionProps}>Précommande boissons :</Text>
                 
                 {products && products.map((product) => (
@@ -210,11 +228,22 @@ export default function BookingScreen() {
             });
             return;
           }
+
+          // Vérifier que les emails des invités ne sont pas vides (sauf le premier qui est l'utilisateur connecté)
+          const invalidGuests = users.slice(1).filter(user => !user.email.trim());
+          if (invalidGuests.length > 0) {
+            Toast.show({
+              type: "error",
+              text1: "Erreur",
+              text2: "Veuillez remplir tous les emails des invités.",
+            });
+            return;
+          }
           
           // Préparer les données de réservation au format backend
           const bookingData = {
             datetime: new Date().toISOString(),
-            user_id: 1, // ID de l'utilisateur connecté
+            user_id: 1, // ID de l'utilisateur connecté (à adapter selon votre système d'auth)
             event_id: parsedEvent.id,
             purchases: Object.entries(users[0].purchases || {}).map(([productId, quantity]) => ({
               product_id: Number(productId),

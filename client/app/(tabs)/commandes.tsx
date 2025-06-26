@@ -70,12 +70,15 @@ export default function Commands() {
                 style={styles.reserveBtn}
                 onPress={() =>
                   router.navigate({
-                    pathname: `booking-qr/${booking.id}`,
-                    params: { booking: JSON.stringify(booking) },
+                    pathname: `booking-tickets/${booking.id}`,
+                    params: { 
+                      booking: JSON.stringify(booking),
+                      userId: "1" // ID de l'utilisateur connecté (à adapter selon votre système d'auth)
+                    },
                   })
                 }
               >
-                <Text style={styles.reserveBtnText}>Voir mon billet</Text>
+                <Text style={styles.reserveBtnText}>Voir mes billets</Text>
               </TouchableOpacity>
             </View>
           ))}

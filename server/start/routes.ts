@@ -25,6 +25,7 @@ router.resource('tickets', '#controllers/tickets_controller')
 router.resource('bookings', '#controllers/bookings_controller')
 router.resource('users', '#controllers/users_controller')
 
+router.get('/users/:id/tickets/:bookingId', '#controllers/users_controller.showTicketsByBooking')
 router.get('/users/:id/tickets', '#controllers/users_controller.show')
 router.put('/tickets/:id/waiting', '#controllers/tickets_controller.waiting')
 router.put('/tickets/:id/used', '#controllers/tickets_controller.used')

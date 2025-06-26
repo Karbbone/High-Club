@@ -16,3 +16,25 @@ export function useUserBooking() {
     queryFn: () => fetcher<{success: string, data: Booking[]}>('/user/1/bookings'),
   });
 }
+
+// Interface pour la réponse des tickets d'un booking
+interface BookingTicketsResponse {
+  success: boolean;
+  data: {
+    booking: {
+      id: number;
+      datetime: string;
+      event: any;
+    };
+    tickets: any[];
+    isBookingOwner: boolean;
+  };
+}
+
+export function useBookingTickets(userId: number, bookingId: number) {
+  return useQuery({
+    queryKey: ['booking-tickets', userId, bookingId],
+    queryFn: () => fetcher<BookingTicketsResponse>(`/users/${userId}/tickets/${bookingId}`),
+    enabled: !!userId && !!bookingId,
+  });
+}

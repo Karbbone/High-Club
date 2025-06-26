@@ -70,7 +70,7 @@ export default function EventScreen() {
                   style={styles.reserveBtn}
                   onPress={() =>
                     router.navigate({
-                      pathname: `booking/${event.id}`,
+                      pathname: `booking/new`,
                       params: { event: JSON.stringify(event) },
                     })
                   }

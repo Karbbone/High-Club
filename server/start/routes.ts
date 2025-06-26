@@ -33,3 +33,5 @@ router.put('/users/:id/profile-picture', '#controllers/users_controller.updatePr
 
 router.post('/messages', '#controllers/messages_controller.store')
 router.post('/messages/user', '#controllers/messages_controller.getUserMessages')
+
+router.get('/instagram/latest', '#controllers/instagram_controller.latest')

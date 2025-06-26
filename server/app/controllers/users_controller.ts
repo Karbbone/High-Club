@@ -5,11 +5,12 @@ import type { HttpContext } from '@adonisjs/core/http'
 import app from '@adonisjs/core/services/app'
 import fs from 'node:fs/promises'
 import path from 'node:path'
+import hash from '@adonisjs/core/services/hash'
 
 export default class UsersController {
   async show({ params, response }: HttpContext) {
     try {
-    const user = await User.query().where('id', params.id).preload('image').firstOrFail()
+      const user = await User.query().where('id', params.id).preload('image').firstOrFail()
       return response.ok({
         success: true,
         data: user,
@@ -18,6 +19,32 @@ export default class UsersController {
       return response.badRequest({
         success: false,
         message: "Erreur lors de la récupération de l'utilisateur",
+        error: error.message,
+      })
+    }
+  }
+
+  async showTicketByID({ params, response }: HttpContext) {
+    try {
+      const user = await User.query()
+        .where('id', params.id)
+        .preload('bookings', (query) => {
+          query.select('*').preload('event', (eventQuery) => {
+            eventQuery.select('*').preload('images', (imageQuery) => {
+              imageQuery.select('*')
+            })
+          })
+        })
+        .firstOrFail()
+
+      return response.ok({
+        success: true,
+        data: user.bookings,
+      })
+    } catch (error) {
+      return response.badRequest({
+        success: false,
+        message: 'Erreur lors de la récupération des commandes du user',
         error: error.message,
       })
     }
@@ -46,11 +73,10 @@ export default class UsersController {
         'username',
         'firstname',
         'lastname',
-        'fidelity_point'
+        'fidelity_point',
       ])
 
       if (data.password) {
-        const hash = (await import('@adonisjs/core/services/hash')).default
         data.password = await hash.make(data.password)
       } else {
         delete data.password

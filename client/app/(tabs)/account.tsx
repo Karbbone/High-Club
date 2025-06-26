@@ -7,6 +7,7 @@ import {
   Text,
   TouchableOpacity,
   View,
+  Platform,
 } from "react-native";
 import { Image } from "expo-image";
 import dateFormat from "dateformat";
@@ -16,7 +17,6 @@ import { useUsers } from "@/services/UserService";
 export default function Account() {
   const { data, isLoading, error } = useUsers();
   const user = data?.data;
-  console.log("user", user);
 
   const router = useRouter();
 
@@ -53,14 +53,14 @@ export default function Account() {
         </View>
 
         <Text style={styles.largeText}>
-          Vous avez cumulé {user.fidelityPoint} points !
+          Vous avez cumulé {user.fidelity_point} points !
         </Text>
 
         <Text style={styles.subtitle}>Vos informations personnelles :</Text>
 
         <View style={styles.accountRow}>
           <View>
-            <Text style={styles.accountTitle}>Nom d'utilisateur</Text>
+            <Text style={styles.accountTitle}>Nom d&pos;utilisateur</Text>
             <Text style={styles.accountSub}>{user.username}</Text>
           </View>
         </View>
@@ -125,7 +125,11 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     backgroundColor: "#fff",
-    paddingTop: 20,
+    paddingTop: Platform.select({
+      ios: 80,
+      android: 80,
+      default: 20,
+    }),
   },
   title: {
     marginBottom: 25,

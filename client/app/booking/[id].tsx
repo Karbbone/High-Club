@@ -1,20 +1,46 @@
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
-import { Event } from '@/types/IEvent';
-import { useLocalSearchParams } from 'expo-router';
-import React, { useEffect, useState, useLayoutEffect } from 'react';
-import { ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Image } from 'expo-image';
-import dateFormat from "dateformat";
-import {Picker} from '@react-native-picker/picker';
-import { useRouter } from 'expo-router';
 import { useEvents } from '@/services/EventService';
-import { useNavigation } from '@react-navigation/native';  
+import { Event } from '@/types/IEvent';
+import { useNavigation } from '@react-navigation/native';
+import dateFormat from "dateformat";
+import { Image } from 'expo-image';
+import { useLocalSearchParams, useRouter } from 'expo-router';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
+import { ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import Toast from 'react-native-toast-message';
 
 export default function BookingScreen() {
   const { id, event } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
+  
+  const [users, setUsers] = useState([
+    { email: '', softs: 0, alcohols: 0 }
+  ]);
+
+  const [total, setTotal] = useState(0);
+  useEffect(() => {
+    const totalSofts = users.reduce((sum, user) => sum + user.softs, 0);
+    const totalAlcohols = users.reduce((sum, user) => sum + user.alcohols, 0);
+    setTotal(totalSofts * 12 + totalAlcohols * 8 + (users.length * 15));
+  }, [users]);
+
+
+  const addUser = () => {
+    setUsers([...users, { email: '', softs: 0, alcohols: 0 }]);
+  };
+
+  const updateUser = (idx, field, value) => {
+    const updated = [...users];
+    updated[idx][field] = value;
+    setUsers(updated);
+  };
+
+  // Fonction pour supprimer une place
+  const removeUser = (idx) => {
+    setUsers(users.filter((_, i) => i !== idx));
+  };
 
   useLayoutEffect(() => {
     navigation.setOptions({ title: 'Réservation' });
@@ -24,47 +50,13 @@ export default function BookingScreen() {
 
   const parsedEvent: Event | null = event ? JSON.parse(event) : null;
 
-
-  const [places, setPlaces] = useState(0);
-  const [softs, setSofts] = useState(0);
-  const [alcohols, setAlcohols] = useState(0);
-  const [total, setTotal] = useState(0);
-
-  useEffect(() => {
-    setTotal(places * 25 + softs * 8 + alcohols * 12);
-  }, [places, softs, alcohols]);
-
-  const incrementPlaces = () => {
-    setPlaces(places + 1);
-  };
-
-  const decrementPlaces = () => {
-    if (places > 0) setPlaces(places - 1);
-  };
-
-  const incrementSofts = () => {
-    setSofts(softs + 1);
-  };
-
-  const decrementSofts = () => {
-    if (softs > 0) setSofts(softs - 1);
-  };
-
-  const incrementAlcohols = () => {
-    setAlcohols(alcohols + 1);
-  };
-
-  const decrementAlcohols = () => {
-    if (alcohols > 0) setAlcohols(alcohols - 1);
-  };
-
   if (isLoading) return <Text>Loading...</Text>;
   //to-do return error page
   if (error) return <Text style={{ paddingTop: 20 }}>Error: {error.message}</Text>;
 
   return (
     <ThemedView style={styles.container}>
-      <ThemedText type="title" style={styles.title}>Réserver vos places</ThemedText>
+      <ThemedText style={styles.title}>Réserver vos places</ThemedText>
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
         <Image
           source={{ uri: parsedEvent.images[0].link || 'https://via.placeholder.com/300' }}
@@ -83,74 +75,74 @@ export default function BookingScreen() {
             </View>
           </View>
         </View>
-        <View>
-          <TouchableOpacity>
-            <Text style={styles.changeText}>Autre soirées</Text>
-            <Picker
-              selectedValue={parsedEvent.id}
-              onValueChange={(itemValue, itemIndex) =>
-                router.navigate({ pathname: `booking/${itemValue}`, params: { event: JSON.stringify(events.data[itemIndex]) } })
-              }>
-                {events.data.map((event) => (
-                  <Picker.Item key={event.id} label={event.name} value={event.id} />
+        
+        <ThemedView style={{ backgroundColor: 'fff' }}>
+              <ThemedText type="title" style={styles.title}>Précommande billets & boissons</ThemedText>
+              <ScrollView style={{ flex: 1, marginBottom: 80 }}>
+                {users.map((user, idx) => (
+                  <View key={idx} style={styles.card}>
+                    <TouchableOpacity
+                      style={styles.removeBtn}
+                      onPress={() => removeUser(idx)}
+                      hitSlop={10}
+                    >
+                      <Text style={styles.removeBtnText}>✕</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.sectionTitle}>Utilisateur {idx + 1}</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Email"
+                      value={user.email}
+                      onChangeText={text => updateUser(idx, 'email', text)}
+                      keyboardType="email-address"
+                      autoCapitalize="none"
+                    />
+                    <Text style={styles.sectionProps}>Précommande boissons :</Text>
+                    <View style={styles.drinkRow}>
+                      <Text>Boissons Alcoolisées</Text>
+                      <View style={styles.counter}>
+                        <TouchableOpacity onPress={() => updateUser(idx, 'alcohols', Math.max(0, user.alcohols - 1))} style={styles.counterBtn}>
+                          <Text style={styles.counterBtnText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.counterValue}>{user.alcohols}</Text>
+                        <TouchableOpacity onPress={() => updateUser(idx, 'alcohols', user.alcohols + 1)} style={styles.counterBtn}>
+                          <Text style={styles.counterBtnText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                    <View style={styles.drinkRow}>
+                      <Text>Boissons Softs</Text>
+                      <View style={styles.counter}>
+                        <TouchableOpacity onPress={() => updateUser(idx, 'softs', Math.max(0, user.softs - 1))} style={styles.counterBtn}>
+                          <Text style={styles.counterBtnText}>-</Text>
+                        </TouchableOpacity>
+                        <Text style={styles.counterValue}>{user.softs}</Text>
+                        <TouchableOpacity onPress={() => updateUser(idx, 'softs', user.softs + 1)} style={styles.counterBtn}>
+                          <Text style={styles.counterBtnText}>+</Text>
+                        </TouchableOpacity>
+                      </View>
+                    </View>
+                  </View>
                 ))}
-            </Picker>
-          </TouchableOpacity>
-        </View>
-
-        <View style={styles.priceRow}>
-          <View>
-            <Text style={styles.pricePer}>25€ / Personne</Text>
-            <Text style={styles.priceTotal}>75€ total</Text>
-          </View>
-          <View style={styles.counter}>
-            <TouchableOpacity style={styles.counterBtn} onPress={decrementPlaces}>
-              <Text style={styles.counterBtnText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.counterValue}>{places}</Text>
-            <TouchableOpacity style={styles.counterBtn} onPress={incrementPlaces}>
-              <Text style={styles.counterBtnText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <Text style={styles.subTitle}>Précommandez vos boissons :</Text>
-
-        <View style={styles.drinkRow}>
-          <View>
-            <Text style={styles.drinkTitle}>Boissons Alcoolisés</Text>
-            <Text style={styles.drinkSub}>12€ par conso</Text>
-          </View>
-          <View style={styles.counter}>
-            <TouchableOpacity style={styles.counterBtn} onPress={decrementAlcohols}>
-              <Text style={styles.counterBtnText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.counterValue}>{alcohols}</Text>
-            <TouchableOpacity style={styles.counterBtn} onPress={incrementAlcohols}>
-              <Text style={styles.counterBtnText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
-        <View style={styles.drinkRow}>
-          <View>
-            <Text style={styles.drinkTitle}>Boissons Softs</Text>
-            <Text style={styles.drinkSub}>8€ par cons</Text>
-          </View>
-          <View style={styles.counter}>
-            <TouchableOpacity style={styles.counterBtn} onPress={decrementSofts}>
-              <Text style={styles.counterBtnText}>-</Text>
-            </TouchableOpacity>
-            <Text style={styles.counterValue}>{softs}</Text>
-            <TouchableOpacity style={styles.counterBtn} onPress={incrementSofts}>
-              <Text style={styles.counterBtnText}>+</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-
+                <TouchableOpacity style={styles.addBtn} onPress={addUser}>
+                  <Text style={styles.addBtnText}>Ajouter une place</Text>
+                </TouchableOpacity>
+              </ScrollView>
+            </ThemedView>
+        </ScrollView>
         <Text style={styles.total}>Total de votre réservation : {total} €</Text>
 
-        <TouchableOpacity style={styles.reserveBtn}>
+        <TouchableOpacity style={styles.reserveBtn} onPress={() => {
+              Toast.show({
+                type: 'success',
+                text1: 'Réservation réussie',
+                text2: 'Votre réservation a bien été prise en compte.',
+                onHide: () => {
+                  // router.navigate('/commandes');
+                }
+              });
+              router.navigate('/commandes');
+            }}>
           <Text style={styles.reserveBtnText}>Réserver</Text>
         </TouchableOpacity>
 
@@ -158,10 +150,6 @@ export default function BookingScreen() {
           Grâce à cette réservation vous obtiendrez 135 points !{' '}
           <Text style={styles.link}>Découvrir mes avantages</Text>
         </Text>
-      </ScrollView>
-      <View style={styles.fab}>
-        <Text style={styles.fabIcon}>😊</Text>
-      </View>
     </ThemedView>
   );
 }
@@ -176,7 +164,7 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 8,
     fontWeight: 'bold',
-    fontSize: 22,
+    fontSize: 18,
     color: '#222',
   },
   imagePlaceholder: {
@@ -327,5 +315,50 @@ const styles = StyleSheet.create({
   fabIcon: {
     fontSize: 24,
     color: '#222',
+  },
+  card: {
+    marginBottom: 24,
+    padding: 16,
+    backgroundColor: '#F5F5F5',
+    borderRadius: 12,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 8,
+    padding: 10,
+    marginBottom: 12,
+    backgroundColor: '#fff',
+  },
+  addBtn: {
+    backgroundColor: '#8f5fff',
+    borderRadius: 10,
+    paddingVertical: 14,
+    alignItems: 'center',
+    marginTop: 8,
+  },
+  addBtnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  removeBtn: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    zIndex: 1,
+    backgroundColor: '#eee',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    alignItems: 'center',
+    justifyContent: 'center',
+    elevation: 2,
+  },
+  removeBtnText: {
+    color: '#888',
+    fontSize: 16,
+    fontWeight: 'bold',
+    lineHeight: 22,
   },
 });

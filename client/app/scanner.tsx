@@ -1,19 +1,20 @@
 import { Overlay } from "@/components/Overlay";
 import { CameraView } from "expo-camera";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useEffect, useRef } from "react";
 import {
   AppState,
-  Linking,
   Platform,
-  SafeAreaView,
   StatusBar,
+  SafeAreaView,
   StyleSheet,
 } from "react-native";
 
 export default function Home() {
   const qrLock = useRef(false);
   const appState = useRef(AppState.currentState);
+    const router = useRouter();
+
 
   useEffect(() => {
     const subscription = AppState.addEventListener("change", (nextAppState) => {
@@ -46,8 +47,11 @@ export default function Home() {
         onBarcodeScanned={({ data }) => {
           if (data && !qrLock.current) {
             qrLock.current = true;
-            setTimeout(async () => {
-              await Linking.openURL(data);
+            setTimeout(() => {
+              router.push({
+                pathname: "/booking-qr/result",
+                params: { booking: data }, 
+              });
             }, 500);
           }
         }}

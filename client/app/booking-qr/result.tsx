@@ -3,23 +3,17 @@ import { ThemedView } from "@/components/ThemedView";
 import { useLocalSearchParams } from "expo-router";
 import React from "react";
 import {
-  Dimensions,
   Platform,
   ScrollView,
   StyleSheet,
   View,
 } from "react-native";
-import QRCode from "react-native-qrcode-svg";
 
-const { width } = Dimensions.get("window");
-
-export default function BookingQRScreen() {
+export default function BookingResultScreen() {
   const { booking } = useLocalSearchParams();
-
   let parsedBooking = null;
   if (booking) {
-    const bookingString = Array.isArray(booking) ? booking[0] : booking;
-    parsedBooking = JSON.parse(bookingString);
+    parsedBooking = JSON.parse(Array.isArray(booking) ? booking[0] : booking);
   }
 
   if (!parsedBooking) {
@@ -34,13 +28,12 @@ export default function BookingQRScreen() {
 
   return (
     <ThemedView style={styles.container}>
-      {/* Header avec bouton retour */}
+      {/* Header */}
       <View style={styles.header}>
-        <ThemedText style={styles.headerTitle}>Mon Billet</ThemedText>
+        <ThemedText style={styles.headerTitle}>Récapitulatif de la commande</ThemedText>
         <View style={{ width: 40 }} />
       </View>
 
-      {/* Contenu principal */}
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.content}
@@ -51,30 +44,16 @@ export default function BookingQRScreen() {
         </ThemedText>
 
         <ThemedText style={styles.eventDetails}>
-          Réservation #{parsedBooking.id}
-        </ThemedText>
-
-        {/* QR Code */}
-        <View style={styles.qrContainer}>
-          <QRCode
-            value={JSON.stringify(parsedBooking)}
-            size={width * 0.6}
-            color="#192734"
-            backgroundColor="#ffffff"
-          />
-        </View>
-
-        <ThemedText style={styles.instructions}>
-          Présentez ce QR code à l&apos;entrée de l&apos;événement
+          Commande #{parsedBooking.id}
         </ThemedText>
 
         <View style={styles.bookingInfo}>
-          <ThemedText style={styles.infoLabel}>Événement:</ThemedText>
+          <ThemedText style={styles.infoLabel}>Événement :</ThemedText>
           <ThemedText style={styles.infoValue}>
             {parsedBooking.event?.name ?? "N/A"}
           </ThemedText>
 
-          <ThemedText style={styles.infoLabel}>Date:</ThemedText>
+          <ThemedText style={styles.infoLabel}>Date :</ThemedText>
           <ThemedText style={styles.infoValue}>
             {parsedBooking.event?.startDatetime
               ? new Date(parsedBooking.event.startDatetime).toLocaleDateString(
@@ -91,10 +70,35 @@ export default function BookingQRScreen() {
               : "N/A"}
           </ThemedText>
 
-          <ThemedText style={styles.infoLabel}>Statut:</ThemedText>
+          <ThemedText style={styles.infoLabel}>Statut :</ThemedText>
           <ThemedText style={[styles.infoValue, styles.statusActive]}>
             Actif
           </ThemedText>
+
+          {/* Affichage des utilisateurs et précommandes */}
+          {parsedBooking.users && Array.isArray(parsedBooking.users) && (
+            <>
+              <ThemedText style={[styles.infoLabel, { marginTop: 18 }]}>
+                Utilisateurs & Précommandes :
+              </ThemedText>
+              {parsedBooking.users.map((user, idx) => (
+                <View key={idx} style={styles.userCard}>
+                  <ThemedText style={styles.userTitle}>
+                    Place {idx + 1}
+                  </ThemedText>
+                  <ThemedText style={styles.userEmail}>
+                    {user.email}
+                  </ThemedText>
+                  <ThemedText style={styles.userDrinks}>
+                    Boissons alcoolisées : {user.alcohols ?? 0}
+                  </ThemedText>
+                  <ThemedText style={styles.userDrinks}>
+                    Boissons softs : {user.softs ?? 0}
+                  </ThemedText>
+                </View>
+              ))}
+            </>
+          )}
         </View>
       </ScrollView>
     </ThemedView>
@@ -117,9 +121,6 @@ const styles = StyleSheet.create({
       default: 20,
     }),
     paddingBottom: 20,
-  },
-  backButton: {
-    padding: 8,
   },
   headerTitle: {
     fontSize: 20,
@@ -147,27 +148,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginBottom: 40,
   },
-  qrContainer: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 20,
-    marginBottom: 30,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 10,
-  },
-  instructions: {
-    fontSize: 16,
-    color: "#fff",
-    textAlign: "center",
-    marginBottom: 40,
-    paddingHorizontal: 20,
-  },
   bookingInfo: {
     width: "100%",
     backgroundColor: "rgba(255, 255, 255, 0.1)",
@@ -188,5 +168,27 @@ const styles = StyleSheet.create({
   statusActive: {
     color: "#4CAF50",
     fontWeight: "bold",
+  },
+  userCard: {
+    backgroundColor: "rgba(255,255,255,0.08)",
+    borderRadius: 10,
+    padding: 12,
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  userTitle: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 15,
+    marginBottom: 2,
+  },
+  userEmail: {
+    color: "#ccc",
+    fontSize: 14,
+    marginBottom: 2,
+  },
+  userDrinks: {
+    color: "#fff",
+    fontSize: 13,
   },
 });

@@ -9,13 +9,28 @@ export default class Purchase extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
-  @belongsTo(() => Ticket)
+  @column()
+  declare ticket_id: number
+
+  @column()
+  declare status_id: number
+
+  @column()
+  declare product_id: number
+
+  @belongsTo(() => Ticket, {
+    foreignKey: 'ticket_id',
+  })
   declare ticket: BelongsTo<typeof Ticket>
 
-  @belongsTo(() => Status)
+  @belongsTo(() => Status, {
+    foreignKey: 'status_id',
+  })
   declare status: BelongsTo<typeof Status>
 
-  @belongsTo(() => Product)
+  @belongsTo(() => Product, {
+    foreignKey: 'product_id',
+  })
   declare product: BelongsTo<typeof Product>
 
   @column.dateTime({ autoCreate: true })

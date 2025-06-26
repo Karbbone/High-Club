@@ -2,36 +2,52 @@
 @baseUrl = http://localhost:3333/bookings
 @contentType = application/json
 
-### Test de la route racine
-GET {{baseUrl}}/
+### Test de récupération de tous les bookings
+GET {{baseUrl}}
 Accept: {{contentType}}
 
 ### Test de récupération d'un booking spécifique (ID: 1)
 GET {{baseUrl}}/1
 Accept: {{contentType}}
 
-### Test avec un ID inexistant
-GET {{baseUrl}}/999
-Accept: {{contentType}}
-
-### Test de création d'un nouveau booking
+### Test de création d'un booking avec achats + guests
 POST {{baseUrl}}
 Content-Type: {{contentType}}
 
 {
-  "datetime": "2025-09-15T21:00:00.000Z",
+  "datetime": "2025-10-15T19:00:00.000Z",
   "user_id": 1,
-  "event_id": 1
-}
-
-### Test de mise à jour d'un booking (ID: 1)
-PUT {{baseUrl}}/1
-Content-Type: {{contentType}}
-
-{
-  "datetime": "2025-07-24T19:00:00.000Z",
-  "user_id": 1,
-  "event_id": 1
+  "event_id": 3,
+  "purchases": [
+    {
+      "product_id": 1,
+      "quantity": 1
+    }
+  ],
+  "guests": [
+    {
+      "email": "invite3@example.com",
+      "purchases": [
+        {
+          "product_id": 2,
+          "quantity": 1
+        }
+      ]
+    },
+    {
+      "email": "invite4@example.com",
+      "purchases": [
+        {
+          "product_id": 1,
+          "quantity": 2
+        },
+        {
+          "product_id": 2,
+          "quantity": 1
+        }
+      ]
+    }
+  ]
 }
 
 ### Test de suppression d'un booking (ID: 3)

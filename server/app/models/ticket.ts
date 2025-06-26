@@ -37,7 +37,9 @@ export default class Ticket extends BaseModel {
   })
   declare booking: BelongsTo<typeof Booking>
 
-  @hasMany(() => Purchase)
+  @hasMany(() => Purchase, {
+    foreignKey: 'ticket_id',
+  })
   declare purchases: HasMany<typeof Purchase>
 
   @column.dateTime({ autoCreate: true })

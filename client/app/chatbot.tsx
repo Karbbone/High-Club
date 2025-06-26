@@ -91,7 +91,7 @@ export default function ChatbotScreen() {
     <KeyboardAvoidingView
       style={{ flex: 1 }}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "android" ? 80 : 0}
+      keyboardVerticalOffset={90}
     >
       <ThemedView style={styles.container}>
         <View style={styles.header}>
@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
-    paddingTop: Platform.OS === "ios" ? 60 : 40,
+    paddingTop: Platform.OS === "ios" ? 20 : 40,
   },
   buttonContainer: {
     overflow: "hidden",
@@ -281,7 +281,7 @@ const styles = StyleSheet.create({
   sendButton: {
     backgroundColor: "#222",
     borderRadius: 24,
-    width: 80,
+    minWidth: 100, 
     height: 50, // Hauteur fixe pour assurer une zone tactile suffisante
     justifyContent: "center",
     alignItems: "center",

@@ -95,65 +95,17 @@ export default class BookingsController {
         datetime,
         user_id,
         event_id,
-        guest_emails = [],
         purchases = [],
-        guest_purchases = [],
-      } = request.only(['datetime', 'user_id', 'event_id', 'guest_emails', 'purchases', 'guest_purchases'])
+        guests = [],
+      } = request.only(['datetime', 'user_id', 'event_id', 'purchases', 'guests'])
 
-      // Vérifier que l'utilisateur principal existe
-      const mainUser = await User.find(user_id)
-      if (!mainUser) {
-        return response.badRequest({
-          success: false,
-          message: "L'utilisateur principal n'existe pas",
-        })
-      }
+      // Validation de l'utilisateur principal
+      const mainUser = await this.validateMainUser(user_id, event_id, response)
+      if (!mainUser) return
 
-      // Vérifier que l'utilisateur principal n'a pas déjà un ticket pour cet événement
-      const existingMainUserTicket = await Ticket.query()
-        .where('user_id', user_id)
-        .whereHas('booking', (query) => {
-          query.where('event_id', event_id)
-        })
-        .first()
-
-      if (existingMainUserTicket) {
-        return response.badRequest({
-          success: false,
-          message: "L'utilisateur principal a déjà un ticket pour cet événement",
-        })
-      }
-
-      // Vérifier les utilisateurs invités
-      const guestUsers = []
-      for (const email of guest_emails) {
-        // Vérifier que l'utilisateur existe
-        const user = await User.findBy('email', email)
-
-        if (!user) {
-          return response.badRequest({
-            success: false,
-            message: `L'utilisateur avec l'email ${email} n'existe pas dans l'application`,
-          })
-        }
-
-        // Vérifier que l'utilisateur n'a pas déjà un ticket pour cet événement
-        const existingTicket = await Ticket.query()
-          .where('user_id', user.id)
-          .whereHas('booking', (query) => {
-            query.where('event_id', event_id)
-          })
-          .first()
-
-        if (existingTicket) {
-          return response.badRequest({
-            success: false,
-            message: `L'utilisateur ${email} a déjà un ticket pour cet événement`,
-          })
-        }
-
-        guestUsers.push(user)
-      }
+      // Validation des utilisateurs invités
+      const guestUsers = await this.validateGuestUsers(guests, event_id, response)
+      if (!guestUsers) return
 
       // Créer la réservation
       const booking = await Booking.create({
@@ -162,72 +114,22 @@ export default class BookingsController {
         event_id,
       })
 
-      // Créer le ticket pour l'utilisateur principal
-      const mainTicket = await Ticket.create({
-        qrcode_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=booking_${booking.id}_user_${user_id}`,
-        booking_id: booking.id,
-        user_id: user_id,
-        status_id: 1, // Waiting
-      })
+      // Créer le ticket et les achats pour l'utilisateur principal
+      await this.createMainUserTicket(booking, user_id, purchases)
 
-      // Créer les achats pour le ticket principal
-      for (const purchase of purchases) {
-        await Purchase.create({
-          ticket_id: mainTicket.id,
-          product_id: purchase.product_id,
-          status_id: 1, // Waiting
-        })
-      }
+      // Créer les tickets et achats pour les invités
+      await this.createGuestTickets(booking, guestUsers)
 
-      // Traiter les invités et leurs achats
-      const createdTickets = []
-
-      for (let i = 0; i < guestUsers.length; i++) {
-        const user = guestUsers[i]
-        const guestPurchase = guest_purchases[i] || { purchases: [] }
-
-        // Créer le ticket pour cet invité
-        const ticket = await Ticket.create({
-          qrcode_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=booking_${booking.id}_user_${user.id}`,
-          booking_id: booking.id,
-          user_id: user.id,
-          status_id: 1, // Waiting
-        })
-
-        // Créer les achats pour cet invité
-        for (const purchase of guestPurchase.purchases || []) {
-          await Purchase.create({
-            ticket_id: ticket.id,
-            product_id: purchase.product_id,
-            status_id: 1, // Waiting
-          })
-        }
-
-        createdTickets.push(ticket)
-      }
-
-      // Charger le booking avec ses relations pour la réponse
-      await booking.load('tickets', (query) => {
-        query.preload('user')
-        query.preload('status')
-        query.preload('purchases', (purchaseQuery) => {
-          purchaseQuery.preload('product')
-          purchaseQuery.preload('status')
-        })
-      })
-      await booking.load('user')
-      await booking.load('event')
-
-      const totalPurchases = purchases.length + guest_purchases.reduce((total: number, guest: any) => total + (guest.purchases?.length || 0), 0)
+      // Calculer les statistiques et organiser les données
+      const stats = this.calculateBookingStats(purchases, guestUsers)
 
       return response.created({
         success: true,
-        message: `Réservation créée avec succès pour ${1 + guest_emails.length} personne(s)`,
+        message: `Réservation créée avec succès pour ${1 + guests.length} personne(s)`,
         data: {
-          booking,
-          tickets_created: 1 + guest_emails.length,
-          guests_added: guest_emails.length,
-          purchases_created: totalPurchases,
+          tickets_created: stats.ticketsCreated,
+          guests_added: stats.guestsAdded,
+          purchases_created: stats.purchasesCreated,
         },
       })
     } catch (error) {
@@ -282,6 +184,144 @@ export default class BookingsController {
         message: 'Erreur lors de la suppression de la réservation',
         error: error.message,
       })
+    }
+  }
+
+  /**
+   * Valider l'utilisateur principal
+   */
+  private async validateMainUser(userId: number, eventId: number, response: any) {
+    const mainUser = await User.find(userId)
+    if (!mainUser) {
+      response.badRequest({
+        success: false,
+        message: "L'utilisateur connecté n'a pas été trouvé",
+      })
+      return null
+    }
+
+    const existingMainUserTicket = await Ticket.query()
+      .where('user_id', userId)
+      .whereHas('booking', (query) => {
+        query.where('event_id', eventId)
+      })
+      .first()
+
+    if (existingMainUserTicket) {
+      response.badRequest({
+        success: false,
+        message: "L'utilisateur connecté a déjà un ticket pour cet événement",
+      })
+      return null
+    }
+
+    return mainUser
+  }
+
+  /**
+   * Valider les utilisateurs invités
+   */
+  private async validateGuestUsers(guests: any[], eventId: number, response: any) {
+    const guestUsers = []
+    
+    for (const guest of guests) {
+      const user = await User.findBy('email', guest.email)
+
+      if (!user) {
+        response.badRequest({
+          success: false,
+          message: `L'utilisateur avec l'email ${guest.email} n'existe pas dans l'application`,
+        })
+        return null
+      }
+
+      const existingTicket = await Ticket.query()
+        .where('user_id', user.id)
+        .whereHas('booking', (query) => {
+          query.where('event_id', eventId)
+        })
+        .first()
+
+      if (existingTicket) {
+        response.badRequest({
+          success: false,
+          message: `L'utilisateur ${guest.email} a déjà un ticket pour cet événement`,
+        })
+        return null
+      }
+
+      guestUsers.push({ user, purchases: guest.purchases || [] })
+    }
+
+    return guestUsers
+  }
+
+  /**
+   * Créer le ticket pour l'utilisateur principal
+   */
+  private async createMainUserTicket(booking: any, userId: number, purchases: any[]) {
+    const mainTicket = await Ticket.create({
+      qrcode_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=booking_${booking.id}_user_${userId}`,
+      booking_id: booking.id,
+      user_id: userId,
+      status_id: 1, // Waiting
+    })
+
+    await this.createPurchasesForTicket(mainTicket.id, purchases)
+  }
+
+  /**
+   * Créer les achats pour un ticket
+   */
+  private async createPurchasesForTicket(ticketId: number, purchases: any[]) {
+    const purchasesToCreate = []
+    
+    for (const purchase of purchases) {
+      for (let i = 0; i < purchase.quantity; i++) {
+        purchasesToCreate.push({
+          ticket_id: ticketId,
+          product_id: purchase.product_id,
+          status_id: 1, // Waiting
+        })
+      }
+    }
+    
+    if (purchasesToCreate.length > 0) {
+      await Purchase.createMany(purchasesToCreate)
+    }
+  }
+
+  /**
+   * Créer les tickets et achats pour les invités
+   */
+  private async createGuestTickets(booking: any, guestUsers: any[]) {
+    for (const guestData of guestUsers) {
+      const { user, purchases: guestPurchases } = guestData
+
+      const ticket = await Ticket.create({
+        qrcode_url: `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=booking_${booking.id}_user_${user.id}`,
+        booking_id: booking.id,
+        user_id: user.id,
+        status_id: 1, // Waiting
+      })
+
+      await this.createPurchasesForTicket(ticket.id, guestPurchases)
+    }
+  }
+
+  /**
+   * Calculer les statistiques de la réservation
+   */
+  private calculateBookingStats(purchases: any[], guestUsers: any[]) {
+    const mainPurchasesCount = purchases.reduce((total: number, purchase: any) => total + purchase.quantity, 0)
+    const guestPurchasesCount = guestUsers.reduce((total: number, guestData: any) => {
+      return total + guestData.purchases.reduce((sum: number, purchase: any) => sum + purchase.quantity, 0)
+    }, 0)
+
+    return {
+      ticketsCreated: 1 + guestUsers.length,
+      guestsAdded: guestUsers.length,
+      purchasesCreated: mainPurchasesCount + guestPurchasesCount,
     }
   }
 }

@@ -10,24 +10,6 @@ Accept: {{contentType}}
 GET {{baseUrl}}/1
 Accept: {{contentType}}
 
-### Test de création d'un booking pour un seul utilisateur + achats
-POST {{baseUrl}}
-Content-Type: {{contentType}}
-
-{
-  "datetime": "2025-09-15T21:00:00.000Z",
-  "user_id": 1,
-  "event_id": 1,
-  "purchases": [
-    {
-      "product_id": 1
-    }, 
-    {
-      "product_id": 2
-    }
-  ]
-}
-
 ### Test de création d'un booking avec achats + guests
 POST {{baseUrl}}
 Content-Type: {{contentType}}
@@ -36,30 +18,32 @@ Content-Type: {{contentType}}
   "datetime": "2025-10-15T19:00:00.000Z",
   "user_id": 1,
   "event_id": 3,
-  "guest_emails": [
-    "invite3@example.com",
-    "invite4@example.com"
-  ],
   "purchases": [
     {
-      "product_id": 1
+      "product_id": 1,
+      "quantity": 1
     }
   ],
-  "guest_purchases": [
+  "guests": [
     {
+      "email": "invite3@example.com",
       "purchases": [
         {
-          "product_id": 2
+          "product_id": 2,
+          "quantity": 1
         }
       ]
     },
     {
+      "email": "invite4@example.com",
       "purchases": [
         {
-          "product_id": 1
+          "product_id": 1,
+          "quantity": 2
         },
         {
-          "product_id": 2
+          "product_id": 2,
+          "quantity": 1
         }
       ]
     }

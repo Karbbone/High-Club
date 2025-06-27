@@ -50,15 +50,16 @@ export default function ChatbotScreen() {
           body: message,
           userId: user?.id,
         });
-      setSuccess(true);
+        setSuccess(true);
 
-      setTimeout(() => {
-        router.replace({ pathname: "/", params: { messageSuccess: "true" } });
-      }, 2000);
-    } catch (err) {
-      setError("Erreur: " + (err.message ?? "Une erreur est survenue"));
-    } finally {
-      setIsSending(false);
+        setTimeout(() => {
+          router.replace({ pathname: "/", params: { messageSuccess: "true" } });
+        }, 2000);
+      } catch (err) {
+        setError("Erreur: " + (err.message ?? "Une erreur est survenue"));
+      } finally {
+        setIsSending(false);
+      }
     }
   }, [step, subject, message, router, user?.id]);
 

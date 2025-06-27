@@ -2,6 +2,8 @@ import { fetcher } from '@/services/fetcher';
 import type { User } from '@/types/IUser';
 import type { Booking } from '@/types/IBooking';
 import { useQuery } from '@tanstack/react-query';
+import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
 
 export function useUsers() {
   return useQuery({
@@ -11,9 +13,15 @@ export function useUsers() {
 }
 
 export function useUserBooking() {
+  const { user } = useAuth();
+  
   return useQuery({
-    queryKey: ['user-bookings'],
-    queryFn: () => fetcher<{success: string, data: Booking[]}>('/user/1/bookings'),
+    queryKey: ['user-bookings', user?.id],
+    queryFn: async () => {
+      const response = await api.get<{success: string, data: Booking[]}>(`/user/${user?.id}/bookings`);
+      return response.data;
+    },
+    enabled: !!user?.id,
   });
 }
 

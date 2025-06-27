@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { api } from "@/services/api";
+import { useAuth } from "@/hooks/useAuth";
 import { useRouter } from "expo-router";
 import React, { useCallback, useState } from "react";
 import {
@@ -18,6 +19,7 @@ import {
 
 export default function ChatbotScreen() {
   const router = useRouter();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [subject, setSubject] = useState("");
   const [message, setMessage] = useState("");
@@ -44,12 +46,12 @@ export default function ChatbotScreen() {
         console.log("Données à envoyer:", {
           subject,
           body: message,
-          userId: 1,
+          userId: user?.id,
         });
         await api.post("/messages", {
           subject,
           body: message,
-          userId: 1,
+          userId: user?.id,
         });
 
         // Message envoyé avec succès
@@ -65,7 +67,7 @@ export default function ChatbotScreen() {
         setIsSending(false);
       }
     }
-  }, [step, subject, message, router, isSending]);
+  }, [step, subject, message, router, user?.id]);
 
   const handleBack = () => {
     if (step === 1) {

@@ -8,6 +8,7 @@ import app from '@adonisjs/core/services/app'
 import fs from 'node:fs/promises'
 import path from 'node:path'
 import hash from '@adonisjs/core/services/hash'
+import { DateTime } from 'luxon'
 
 export default class UsersController {
   async show({ params, response }: HttpContext) {
@@ -184,6 +185,173 @@ export default class UsersController {
       return response.badRequest({
         success: false,
         message: 'Erreur lors de la récupération des tickets',
+        error: error.message,
+      })
+    }
+  }
+
+  /**
+   * Inscription d'un nouvel utilisateur
+   */
+  async register({ request, response }: HttpContext) {
+    try {
+      const { email, password, username, firstname, lastname, birthdate } = request.only([
+        'email',
+        'password',
+        'username',
+        'firstname',
+        'lastname',
+        'birthdate',
+      ])
+
+      // Vérifier si l'utilisateur existe déjà
+      const existingUser = await User.findBy('email', email)
+      if (existingUser) {
+        return response.badRequest({
+          success: false,
+          message: 'Un utilisateur avec cet email existe déjà',
+        })
+      }
+
+      // Créer le nouvel utilisateur
+      const user = await User.create({
+        email,
+        password: await hash.make(password),
+        username,
+        firstname,
+        lastname,
+        birthdate: birthdate ? DateTime.fromISO(birthdate) : DateTime.fromISO('1990-01-01'),
+        fidelity_point: 0,
+        is_verified: false,
+      })
+
+      return response.created({
+        success: true,
+        message: 'Utilisateur créé avec succès',
+        data: {
+          id: user.id,
+          email: user.email,
+          username: user.username,
+          firstname: user.firstname,
+          lastname: user.lastname,
+        },
+      })
+    } catch (error) {
+      return response.badRequest({
+        success: false,
+        message: 'Erreur lors de la création du compte',
+        error: error.message,
+      })
+    }
+  }
+
+  /**
+   * Connexion d'un utilisateur
+   */
+  async login({ request, response, auth }: HttpContext) {
+    try {
+      const { email, password } = request.only(['email', 'password'])
+
+      // Vérifier les identifiants
+      const user = await User.findBy('email', email)
+
+      if (!user) {
+        return response.unauthorized({
+          success: false,
+          message: 'Email ou mot de passe incorrect',
+        })
+      }
+
+      // Utiliser la méthode verifyPassword du modèle User
+      const isValidPassword = await user.verifyPassword(password)
+
+      if (!isValidPassword) {
+        return response.unauthorized({
+          success: false,
+          message: 'Email ou mot de passe incorrect',
+        })
+      }
+
+      // Créer un token d'accès
+      const token = await auth.use('api').createToken(user)
+
+      return response.ok({
+        success: true,
+        message: 'Connexion réussie',
+        data: {
+          user: {
+            id: user.id,
+            email: user.email,
+            username: user.username,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            fidelity_point: user.fidelity_point,
+          },
+          token: token.value,
+        },
+      })
+    } catch (error) {
+      return response.badRequest({
+        success: false,
+        message: 'Erreur lors de la connexion',
+        error: error.message,
+      })
+    }
+  }
+
+  /**
+   * Déconnexion
+   */
+  async logout({ response, auth }: HttpContext) {
+    try {
+      // Pour l'instant, on retourne juste un succès
+      // La révocation du token sera gérée côté client
+      return response.ok({
+        success: true,
+        message: 'Déconnexion réussie',
+      })
+    } catch (error) {
+      return response.badRequest({
+        success: false,
+        message: 'Erreur lors de la déconnexion',
+        error: error.message,
+      })
+    }
+  }
+
+  /**
+   * Récupérer le profil de l'utilisateur connecté
+   */
+  async me({ response, request }: HttpContext) {
+    try {
+      const authHeader = request.header('Authorization')
+
+      if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return response.unauthorized({
+          success: false,
+          message: "Token d'authentification manquant",
+        })
+      }
+
+      const token = authHeader.replace('Bearer ', '')
+
+      const user = await User.query().preload('image').first()
+
+      if (!user) {
+        return response.notFound({
+          success: false,
+          message: 'Aucun utilisateur trouvé',
+        })
+      }
+
+      return response.ok({
+        success: true,
+        data: user,
+      })
+    } catch (error) {
+      return response.badRequest({
+        success: false,
+        message: 'Erreur lors de la récupération du profil',
         error: error.message,
       })
     }

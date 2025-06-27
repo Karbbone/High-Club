@@ -1,10 +1,11 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { useUsers } from "@/services/UserService";
+import { useMe , AuthService } from "@/services/AuthService";
+import { useAuth, resetAuthState } from "@/hooks/useAuth";
 import dateFormat from "dateformat";
 import { Image } from "expo-image";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Platform,
   ScrollView,
@@ -15,10 +16,18 @@ import {
 } from "react-native";
 
 export default function Account() {
-  const { data, isLoading, error } = useUsers();
+  const { data, isLoading, error } = useMe();
   const user = data?.data;
+  const { logout } = useAuth();
 
   const router = useRouter();
+
+  useEffect(() => {
+    if (error && error.message === "Utilisateur non authentifié") {
+      AuthService.clearAuth();
+      router.replace('/login');
+    }
+  }, [error, router]);
 
   if (isLoading)
     return (
@@ -26,22 +35,42 @@ export default function Account() {
         <ThemedText style={{ color: "#fff" }}>Loading...</ThemedText>
       </ThemedView>
     );
-  //to-do return error page
-  if (error)
+
+  if (error || !user) {
     return (
       <ThemedView style={styles.container}>
-        <ThemedText style={{ paddingTop: 20, color: "#fff" }}>
-          Error: {error.message}
+        <ThemedText type="title" style={styles.title}>
+          Votre profil
         </ThemedText>
+        <View style={styles.centerContent}>
+          <ThemedText style={{ color: "#fff", textAlign: "center", marginBottom: 20 }}>
+            {error?.message === "Utilisateur non authentifié" 
+              ? "Vous devez vous connecter pour voir votre profil"
+              : "Erreur lors du chargement du profil"}
+          </ThemedText>
+          <TouchableOpacity
+            style={styles.updateUserBtn}
+            onPress={async () => {
+              await AuthService.clearAuth();
+              resetAuthState();
+              router.replace('/login');
+            }}
+          >
+            <Text style={styles.updateUserBtnText}>
+              Se reconnecter
+            </Text>
+          </TouchableOpacity>
+        </View>
       </ThemedView>
     );
+  }
 
   return (
     <ThemedView style={styles.container}>
       <ThemedText type="title" style={styles.title}>
         Votre profil
       </ThemedText>
-      <ScrollView style={{ flex: 1, marginBottom: 80 }}>
+      <ScrollView style={{ flex: 1 }}>
         <View
           style={{
             flexDirection: "row",
@@ -64,7 +93,7 @@ export default function Account() {
         </View>
 
         <Text style={styles.largeText}>
-          Vous avez cumulé {user.fidelity_point} points !
+          Vous avez cumulé {user.fidelityPoint} points !
         </Text>
 
         <Text style={styles.subtitle}>Vos informations personnelles :</Text>
@@ -123,10 +152,20 @@ export default function Account() {
             Modifier mon mot de passe
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity
+          style={[styles.updateUserBtn, { backgroundColor: '#ff4444' }]}
+          onPress={async () => {
+            await AuthService.clearAuth();
+            resetAuthState();
+            router.replace('/login');
+          }}
+        >
+          <Text style={[styles.updateUserBtnText, { color: '#fff' }]}>
+            Se déconnecter
+          </Text>
+        </TouchableOpacity>
       </ScrollView>
-      <View style={styles.fab}>
-        <Text style={styles.fabIcon}>😊</Text>
-      </View>
     </ThemedView>
   );
 }
@@ -224,5 +263,10 @@ const styles = StyleSheet.create({
   fabIcon: {
     fontSize: 24,
     color: "#192734",
+  },
+  centerContent: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
   },
 });

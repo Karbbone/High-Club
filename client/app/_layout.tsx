@@ -1,4 +1,5 @@
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useAuth } from "@/hooks/useAuth";
 import NetInfo from "@react-native-community/netinfo";
 import { DarkTheme, ThemeProvider } from "@react-navigation/native";
 import {
@@ -17,16 +18,84 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from "react-native";
 import "react-native-reanimated";
 import Toast from "react-native-toast-message";
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const queryClient = new QueryClient();
+function AppContent() {
   const router = useRouter();
   const segments = useSegments();
   const isChatbot = segments[0] === "chatbot";
+  
+  // const { useAuth } = require("@/hooks/useAuth");
+  const { user, isInitialized } = useAuth();
+
+  useEffect(() => {
+    if (!isInitialized) return;
+    
+    const isOnAuthPage = segments[0] === "login" || segments[0] === "register";
+    
+    if (!user && !isOnAuthPage) {
+      router.replace("/login");
+    } else if (user && isOnAuthPage) {
+      router.replace("/(tabs)");
+    }
+  }, [user, segments, isInitialized, router]);
+
+  if (!isInitialized) {
+    return (
+      <ThemeProvider value={DarkTheme}>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#192734' }}>
+          <Text style={{ color: '#fff' }}>Chargement...</Text>
+        </View>
+      </ThemeProvider>
+    );
+  }
+
+  return (
+    <ThemeProvider value={DarkTheme}>
+      <Stack>
+        <Stack.Screen
+          name="(tabs)"
+          options={{
+            headerShown: false,
+            title: "Home",
+          }}
+        />
+        <Stack.Screen 
+          name="login" 
+          options={{ 
+            headerShown: false,
+            title: "Connexion" 
+          }} 
+        />
+        <Stack.Screen 
+          name="register" 
+          options={{ 
+            headerShown: false,
+            title: "Inscription" 
+          }} 
+        />
+        <Stack.Screen name="scanner" options={{ title: "Scanner" }} />
+        <Stack.Screen name="+not-found" />
+      </Stack>
+      <StatusBar style="light" />
+      {!isChatbot && user && (
+        <TouchableOpacity
+          style={styles.fab}
+          onPress={() => router.navigate("chatbot")}
+        >
+          <Text style={styles.fabIcon}>💬</Text>
+        </TouchableOpacity>
+      )}
+    </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  const queryClient = new QueryClient();
+  useColorScheme();
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -55,28 +124,7 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={DarkTheme}>
-        <Stack>
-          <Stack.Screen
-            name="(tabs)"
-            options={{
-              headerShown: false,
-              title: "Home",
-            }}
-          />
-          <Stack.Screen name="scanner" options={{ title: "Scanner" }} />
-          <Stack.Screen name="+not-found" />
-        </Stack>
-        <StatusBar style="light" />
-        {!isChatbot && (
-          <TouchableOpacity
-            style={styles.fab}
-            onPress={() => router.navigate("chatbot")}
-          >
-            <Text style={styles.fabIcon}>💬</Text>
-          </TouchableOpacity>
-        )}
-      </ThemeProvider>
+      <AppContent />
       <Toast position="top" />
     </QueryClientProvider>
   );

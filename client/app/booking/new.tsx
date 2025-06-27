@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { useEvents } from "@/services/EventService";
 import { useProducts } from "@/services/ProductService";
 import { useCreateBooking } from "@/services/BookingService";
+import { useAuth } from "@/hooks/useAuth";
 import { Event } from "@/types/IEvent";
 import { useNavigation } from "@react-navigation/native";
 import dateFormat from "dateformat";
@@ -23,6 +24,7 @@ export default function BookingScreen() {
   const { event } = useLocalSearchParams();
   const router = useRouter();
   const navigation = useNavigation();
+  const { user } = useAuth();
 
   const { data: products, isLoading: productsLoading } = useProducts();
   const createBookingMutation = useCreateBooking();
@@ -240,10 +242,9 @@ export default function BookingScreen() {
             return;
           }
           
-          // Préparer les données de réservation au format backend
           const bookingData = {
             datetime: new Date().toISOString(),
-            user_id: 1, // ID de l'utilisateur connecté (à adapter selon votre système d'auth)
+            user_id: user.id,
             event_id: parsedEvent.id,
             purchases: Object.entries(users[0].purchases || {}).map(([productId, quantity]) => ({
               product_id: Number(productId),

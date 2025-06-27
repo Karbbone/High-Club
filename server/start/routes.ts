@@ -15,6 +15,12 @@ router.get('/', async () => {
   }
 })
 
+// Routes d'authentification publiques
+router.post('/auth/register', '#controllers/users_controller.register')
+router.post('/auth/login', '#controllers/users_controller.login')
+router.post('/auth/logout', '#controllers/users_controller.logout')
+router.get('/auth/me', '#controllers/users_controller.me')
+
 router.get('/users/email', '#controllers/users_controller.showByEmail')
 router.get('/user/:id/bookings', '#controllers/users_controller.showTicketByID')
 

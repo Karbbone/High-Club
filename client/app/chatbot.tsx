@@ -27,45 +27,37 @@ export default function ChatbotScreen() {
 
   // Utiliser useCallback pour éviter des rendus inutiles
   const handleSendMessage = useCallback(async () => {
-    // Toujours effacer les erreurs précédentes au début
     setError("");
 
-    // Si on est à l'étape 1, passer à l'étape 2
     if (step === 1) {
       setStep(2);
-      setError("");
       return;
     }
 
-    // Si on est à l'étape 2, envoyer directement le message
-    if (step === 2) {
-      try {
-        setIsSending(true);
-        console.log("Données à envoyer:", {
-          subject,
-          body: message,
-          userId: 1,
-        });
-        await api.post("/messages", {
-          subject,
-          body: message,
-          userId: 1,
-        });
-
-        // Message envoyé avec succès
-        setSuccess(true);
-
-        // Attendre 2 secondes avant de rediriger
-        setTimeout(() => {
-          router.replace({ pathname: "/", params: { messageSuccess: "true" } });
-        }, 2000);
-      } catch (err) {
-        setError("Erreur: " + (err.message ?? "Une erreur est survenue"));
-      } finally {
-        setIsSending(false);
-      }
+    // Ici, step === 2
+    if (!message.trim()) {
+      return;
     }
-  }, [step, subject, message, router, isSending]);
+
+    try {
+      setIsSending(true);
+      await api.post("/messages", {
+        subject,
+        body: message,
+        userId: 1,
+      });
+
+      setSuccess(true);
+
+      setTimeout(() => {
+        router.replace({ pathname: "/", params: { messageSuccess: "true" } });
+      }, 2000);
+    } catch (err) {
+      setError("Erreur: " + (err.message ?? "Une erreur est survenue"));
+    } finally {
+      setIsSending(false);
+    }
+  }, [step, subject, message, router]);
 
   const handleBack = () => {
     if (step === 1) {

@@ -1,35 +1,37 @@
 // app/Controllers/Http/InstagramController.ts
 import type { HttpContext } from '@adonisjs/core/http'
 import axios from 'axios'
+import { LRUCache } from 'lru-cache'
+
+const cache = new LRUCache({ max: 1, ttl: 5 * 60 * 1000 }) // 5 min
+const IG_APP_ID = '936619743392459'
 
 export default class InstagramController {
-  /**
-   * GET /instagram/latest
-   * Renvoie les 5 derniers posts publics d’un compte Instagram.
-   */
   public async latest({ response }: HttpContext) {
     const username = 'hypefamousclub'
-    const url = `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`
+
+    // 1. essaie la mémoire-cache avant d’appeler Instagram
+    const cached = cache.get(username)
+    if (cached) return response.ok(cached)
 
     try {
-      /* ------------------------------------------------------------------
-       * 1. Appel “hidden API” d’Instagram (JSON)
-       * ----------------------------------------------------------------- */
-      const { data } = await axios.get(url, {
-        // Un UA mobile “Instagram” évite le redirect en HTML
-        headers: {
-          'User-Agent': 'Instagram 273.0.0.9.100 (iPhone; iOS 14_0; Scale/2.00)',
-          'Accept': 'application/json',
-        },
-        timeout: 8000,
-      })
+      const { data } = await axios.get(
+        `https://i.instagram.com/api/v1/users/web_profile_info/?username=${username}`,
+        {
+          headers: {
+            'x-ig-app-id': IG_APP_ID,
+            'User-Agent':
+              'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0 Safari/537.36',
+            'Accept-Language': 'fr-FR,fr;q=0.9,en-US;q=0.8',
+            'Accept': '*/*',
+          },
+          timeout: 8000,
+        }
+      )
 
-      /* ------------------------------------------------------------------
-       * 2. On remonte aux médias récents
-       * ----------------------------------------------------------------- */
       const edges = data?.data?.user?.edge_owner_to_timeline_media?.edges ?? []
 
-      const posts = edges.slice(0, 10).map((e: any) => {
+      const posts = edges.slice(0, 5).map((e: any) => {
         const n = e.node
         return {
           id: n.id,
@@ -42,10 +44,15 @@ export default class InstagramController {
         }
       })
 
+      cache.set(username, posts)
       return response.ok(posts)
-    } catch (err) {
-      console.error('Instagram scrape failed:', err.message)
-      return response.status(502).send({ error: 'Scrape failed' })
+    } catch (err: any) {
+      // log détaillé pour diagnostiquer “useragent mismatch”, “please wait”, etc.
+      console.error('Instagram scrape failed:', err.response?.data || err.message)
+      return response.status(502).send({
+        error: 'Instagram error',
+        details: err.response?.data ?? 'unknown',
+      })
     }
   }
 }

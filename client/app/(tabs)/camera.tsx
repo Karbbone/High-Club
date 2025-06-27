@@ -72,6 +72,7 @@ const styles = StyleSheet.create({
   title: {
     color: "white",
     fontSize: 40,
+    marginBottom: 40,
   },
   buttonStyle: {
     fontSize: 20,

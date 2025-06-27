@@ -1,26 +1,26 @@
+import { ThemedText } from '@/components/ThemedText'
+import { ThemedView } from '@/components/ThemedView'
+import { api } from '@/services/api'
 import { useQuery } from '@tanstack/react-query'
 import { Image } from 'expo-image'
+import { useVideoPlayer, VideoView } from 'expo-video'
+import { useState } from 'react'
 import {
   ActivityIndicator,
+  Button,
   Dimensions,
   FlatList,
   Linking,
+  Platform,
   Pressable,
   StyleSheet,
-  Platform,
-  View,
-  Text,
+  View
 } from 'react-native'
-import { ThemedText } from '@/components/ThemedText'
-import { ThemedView } from '@/components/ThemedView'
-import { useVideoPlayer, VideoView } from 'expo-video';
-import { api } from '@/services/api';
-import { useState } from 'react'
 
 
 async function fetchLastPosts() {
   const res = await api.get('instagram/latest')
-  if (res.statusText !== 'OK') throw new Error('Erreur serveur Instagram')
+  if (res.status !== 200) throw new Error('Erreur lors de la récupération des derniers posts Instagram')
   return res.data as {
     id: string
     media_url: string
@@ -32,36 +32,35 @@ async function fetchLastPosts() {
 }
 
 function VideoCard({ item, currentVideo, setCurrentVideo }) {
-  // Appelle le hook ici, pas dans une boucle !
   const player = useVideoPlayer(item.video_url, player => {
     player.loop = true;
   });
 
+  const isPlaying = currentVideo === item.video_url;
+
   return (
-    <>
-      <Pressable onPress={() => setCurrentVideo(item.video_url)}>
-        <Image source={{ uri: item.media_url }} style={styles.image} />
-        <View style={{
-          position: 'absolute',
-          top: 0, left: 0, right: 0, bottom: 0,
-          justifyContent: 'center', alignItems: 'center',
-          backgroundColor: 'rgba(0,0,0,0.15)'
-        }}>
-        </View>
-      </Pressable>
-      {currentVideo === item.video_url && (
+    <Pressable onPress={() => setCurrentVideo(item.video_url)}>
+      {isPlaying ? (
         <VideoView
           player={player}
           style={styles.image}
         />
+      ) : (
+        <>
+          <Image source={{ uri: item.media_url }} style={styles.image} />
+          <View style={styles.playOverlay}>
+
+            <ThemedText style={styles.playIcon}>▶️</ThemedText>
+          </View>
+        </>
       )}
-    </>
+    </Pressable>
   );
 }
 
 
 export default function HomeScreen() {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error, refetch, isFetching } = useQuery({
     queryKey: ['igLast5'],
     queryFn: fetchLastPosts,
     staleTime: Infinity,
@@ -82,6 +81,11 @@ export default function HomeScreen() {
     return (
       <ThemedView style={styles.center}>
         <ThemedText type="subtitle">{String(error)}</ThemedText>
+        <Button
+          title={isFetching ? "Rafraîchissement..." : "Rafraîchir"}
+          onPress={() => refetch()}
+          disabled={isFetching}
+        />
       </ThemedView>
     )
   }
@@ -117,7 +121,7 @@ export default function HomeScreen() {
   )
 }
 
-const GAP = 12
+const GAP = 20
 const WIDTH = Dimensions.get('window').width - GAP * 2
 
 const styles = StyleSheet.create({
@@ -127,7 +131,7 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  list: { padding: GAP },
+  list: { padding: GAP, paddingBottom: 80 },
   card: {
     backgroundColor: '#fff',
     borderRadius: 18,
@@ -183,6 +187,7 @@ const styles = StyleSheet.create({
   fabIcon: {
     fontSize: 28,
     color: "#fff",
+    elevation: 999,
   },
   reactLogo: {
     height: 178,
@@ -190,5 +195,22 @@ const styles = StyleSheet.create({
     bottom: 0,
     left: 0,
     position: "absolute",
-  }
+  },
+  playOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    pointerEvents: 'none', // pour ne pas bloquer le clic
+  },
+  playIcon: {
+    fontSize: 54,
+    color: '#fff',
+    elevation: 40,
+    textShadowColor: '#000',
+    textShadowRadius: 8,
+  },
 })

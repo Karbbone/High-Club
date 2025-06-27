@@ -10,7 +10,7 @@ export interface User {
   firstname: string;
   lastname: string;
   birthdate: string;
-  fidelity_point: number;
+  fidelityPoint: number;
   tickets?: Ticket[];
   bookings?: Booking[];
   image?: Image;

@@ -11,11 +11,14 @@ import {
 } from "react-native";
 // Remplace ce hook par ton vrai hook pour récupérer les billets
 import { useUserBooking } from "@/services/UserService";
+import { useAuth } from "@/hooks/useAuth";
 import dateFormat from "dateformat";
 import { useRouter } from "expo-router";
 
 export default function Commands() {
+  
   const { data: bookings, isLoading, error } = useUserBooking();
+  const { user } = useAuth();
   const router = useRouter();
 
   if (isLoading)
@@ -73,7 +76,7 @@ export default function Commands() {
                     pathname: `booking-tickets/${booking.id}`,
                     params: { 
                       booking: JSON.stringify(booking),
-                      userId: "1" // ID de l'utilisateur connecté (à adapter selon votre système d'auth)
+                      userId: user?.id?.toString()
                     },
                   })
                 }

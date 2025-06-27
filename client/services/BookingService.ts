@@ -7,7 +7,10 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 export function useBookings() {
   return useQuery({
     queryKey: ['bookings'],
-    queryFn: () => fetcher<Booking[]>('/bookings'),
+    queryFn: async () => {
+      const response = await api.get<Booking[]>('/bookings');
+      return response.data;
+    },
   });
 }
 

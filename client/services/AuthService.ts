@@ -142,8 +142,13 @@ export function useMe() {
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
-      const response = await api.get<{ success: boolean; data: User }>('/auth/me');
-      return response.data;
+      try {
+        const response = await api.get<{ success: boolean; data: User }>('/auth/me');
+        return response.data;
+      } catch (error) {
+        console.log('Erreur useMe:', error);
+        throw error;
+      }
     },
     retry: false, // Ne pas retenter en cas d'échec
   });

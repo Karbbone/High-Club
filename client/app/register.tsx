@@ -26,6 +26,7 @@ export default function RegisterScreen() {
     birthdate: new Date('1990-01-01'),
   });
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState(new Date('1990-01-01'));
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { register } = useAuth();
@@ -68,10 +69,24 @@ export default function RegisterScreen() {
   };
 
   const onDateChange = (event: any, selectedDate?: Date) => {
-    setShowDatePicker(false);
     if (selectedDate) {
-      updateFormData('birthdate', selectedDate);
+      setTempDate(selectedDate);
     }
+  };
+
+  const confirmDate = () => {
+    updateFormData('birthdate', tempDate);
+    setShowDatePicker(false);
+  };
+
+  const cancelDate = () => {
+    setTempDate(formData.birthdate);
+    setShowDatePicker(false);
+  };
+
+  const openDatePicker = () => {
+    setTempDate(formData.birthdate);
+    setShowDatePicker(true);
   };
 
   const formatDate = (date: Date) => {
@@ -91,6 +106,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Prénom"
+              placeholderTextColor="#666"
               value={formData.firstname}
               onChangeText={(value) => updateFormData('firstname', value)}
               autoComplete="given-name"
@@ -99,6 +115,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Nom"
+              placeholderTextColor="#666"
               value={formData.lastname}
               onChangeText={(value) => updateFormData('lastname', value)}
               autoComplete="family-name"
@@ -107,6 +124,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Nom d'utilisateur"
+              placeholderTextColor="#666"
               value={formData.username}
               onChangeText={(value) => updateFormData('username', value)}
               autoCapitalize="none"
@@ -115,6 +133,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Email"
+              placeholderTextColor="#666"
               value={formData.email}
               onChangeText={(value) => updateFormData('email', value)}
               keyboardType="email-address"
@@ -124,7 +143,7 @@ export default function RegisterScreen() {
             
             <TouchableOpacity
               style={styles.dateInput}
-              onPress={() => setShowDatePicker(true)}
+              onPress={openDatePicker}
             >
               <ThemedText style={styles.dateInputText}>
                 {formatDate(formData.birthdate)}
@@ -135,6 +154,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Mot de passe"
+              placeholderTextColor="#666"
               value={formData.password}
               onChangeText={(value) => updateFormData('password', value)}
               secureTextEntry
@@ -144,6 +164,7 @@ export default function RegisterScreen() {
             <TextInput
               style={styles.input}
               placeholder="Confirmer le mot de passe"
+              placeholderTextColor="#666"
               value={formData.confirmPassword}
               onChangeText={(value) => updateFormData('confirmPassword', value)}
               secureTextEntry
@@ -173,14 +194,26 @@ export default function RegisterScreen() {
       </KeyboardAvoidingView>
       
       {showDatePicker && (
-        <DateTimePicker
-          value={formData.birthdate}
-          mode="date"
-          display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-          onChange={onDateChange}
-          maximumDate={new Date()}
-          minimumDate={new Date('1900-01-01')}
-        />
+        <>
+          <DateTimePicker
+            value={tempDate}
+            mode="date"
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={onDateChange}
+            maximumDate={new Date()}
+            minimumDate={new Date('1900-01-01')}
+          />
+          {Platform.OS === 'ios' && (
+            <View style={styles.datePickerButtons}>
+              <TouchableOpacity style={styles.datePickerButton} onPress={cancelDate}>
+                <ThemedText style={styles.datePickerButtonText}>Annuler</ThemedText>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.datePickerButton, styles.datePickerButtonConfirm]} onPress={confirmDate}>
+                <ThemedText style={styles.datePickerButtonTextConfirm}>Confirmer</ThemedText>
+              </TouchableOpacity>
+            </View>
+          )}
+        </>
       )}
     </ThemedView>
   );
@@ -257,5 +290,28 @@ const styles = StyleSheet.create({
   dateInputLabel: {
     color: '#192734',
     fontSize: 14,
+  },
+  datePickerButtons: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    padding: 10,
+  },
+  datePickerButton: {
+    padding: 10,
+    borderWidth: 1,
+    borderColor: '#fff',
+    borderRadius: 5,
+  },
+  datePickerButtonText: {
+    color: '#fff',
+    fontSize: 16,
+  },
+  datePickerButtonConfirm: {
+    backgroundColor: '#fff',
+  },
+  datePickerButtonTextConfirm: {
+    color: '#192734',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 }); 

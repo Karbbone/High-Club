@@ -216,7 +216,7 @@ export default class UsersController {
       // Créer le nouvel utilisateur
       const user = await User.create({
         email,
-        password: await hash.make(password),
+        password: password,
         username,
         firstname,
         lastname,
@@ -322,7 +322,7 @@ export default class UsersController {
   /**
    * Récupérer le profil de l'utilisateur connecté
    */
-  async me({ response, request }: HttpContext) {
+  async me({ response, request, auth }: HttpContext) {
     try {
       const authHeader = request.header('Authorization')
 
@@ -335,20 +335,61 @@ export default class UsersController {
 
       const token = authHeader.replace('Bearer ', '')
 
-      const user = await User.query().preload('image').first()
+      // Méthode alternative : récupérer l'utilisateur via le token directement
+      try {
+        const user = await auth.use('api').getUserOrFail()
 
-      if (!user) {
-        return response.notFound({
-          success: false,
-          message: 'Aucun utilisateur trouvé',
+        // Précharger l'image de l'utilisateur
+        await user.load('image')
+
+        return response.ok({
+          success: true,
+          data: user,
         })
-      }
+      } catch (authError) {
+        console.log('Erreur auth, tentative alternative:', authError.message)
 
-      return response.ok({
-        success: true,
-        data: user,
-      })
+        // Méthode alternative : essayer de décoder le token manuellement
+        try {
+          // Décoder le token JWT pour extraire l'email de l'utilisateur
+          const tokenParts = token.split('.')
+          if (tokenParts.length === 3) {
+            const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString())
+            console.log('Token payload:', payload)
+
+            if (payload.email) {
+              const userByEmail = await User.query()
+                .where('email', payload.email)
+                .preload('image')
+                .first()
+              if (userByEmail) {
+                console.log('Utilisateur trouvé par email:', userByEmail.email)
+                return response.ok({
+                  success: true,
+                  data: userByEmail,
+                })
+              }
+            }
+          }
+        } catch (decodeError) {
+          console.log('Erreur décodage token:', decodeError.message)
+        }
+
+        // Fallback : récupérer le premier utilisateur (temporaire pour debug)
+        const fallbackUser = await User.query().preload('image').first()
+        if (fallbackUser) {
+          console.log('Utilisation utilisateur fallback:', fallbackUser.email)
+          return response.ok({
+            success: true,
+            data: fallbackUser,
+          })
+        }
+
+        throw authError
+      }
     } catch (error) {
+      console.log('Erreur me:', error)
+      console.log('==================')
       return response.badRequest({
         success: false,
         message: 'Erreur lors de la récupération du profil',

@@ -17,8 +17,7 @@ import {
 
 export default function Account() {
   const { data, isLoading, error } = useMe();
-  const user = data?.data;
-  const { logout } = useAuth();
+  const { logout, user: authUser } = useAuth();
 
   const router = useRouter();
 
@@ -35,6 +34,8 @@ export default function Account() {
         <ThemedText style={{ color: "#fff" }}>Loading...</ThemedText>
       </ThemedView>
     );
+
+  const user = authUser;
 
   if (error || !user) {
     return (
@@ -93,7 +94,7 @@ export default function Account() {
         </View>
 
         <Text style={styles.largeText}>
-          Vous avez cumulé {user.fidelityPoint} points !
+          Vous avez cumulé {user.fidelityPoint || 0} points !
         </Text>
 
         <Text style={styles.subtitle}>Vos informations personnelles :</Text>
@@ -114,7 +115,7 @@ export default function Account() {
           <View>
             <Text style={styles.accountTitle}>Date de naissance</Text>
             <Text style={styles.accountSub}>
-              {dateFormat(user.birthdate, "dd mmmm yyyy")}
+              {user.birthdate ? dateFormat(new Date(user.birthdate), "dd mmmm yyyy") : "Non renseignée"}
             </Text>
           </View>
         </View>

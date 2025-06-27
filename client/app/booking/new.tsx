@@ -169,6 +169,7 @@ export default function BookingScreen() {
                   <TextInput
                     style={styles.input}
                     placeholder="Email de l'invité"
+                    placeholderTextColor="#666"
                     value={user.email}
                     onChangeText={(text) => updateUser(idx, "email", text)}
                     keyboardType="email-address"
